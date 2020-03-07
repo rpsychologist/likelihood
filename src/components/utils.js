@@ -53,6 +53,10 @@ export const dSigma2 = (d, mu, sigma2) => {
   const n = d.length;
   return -n / (2 * sigma2) + calcSS(d, mu) / (2 * sigma2 * sigma2);
 };
+export const d2Sigma2 = (d, mu, sigma2) => {
+  const n = d.length;
+  return n*(1/(Math.pow(sigma2, 2)) - (calcSS(d, mu) / Math.pow(sigma2, 3)));
+}
 
 // Other
 export const topTooltipPath = (width, height, offset, radius) => {

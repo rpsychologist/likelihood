@@ -14,7 +14,7 @@ import { contours } from "d3-contour";
 import { logLikSum } from "../utils";
 import katex from "katex";
 
-import { dMu, dSigma2 } from "../utils";
+import { dMu, d2Mu, dSigma2, d2Sigma2 } from "../utils";
 import Tooltip from "./Tooltip";
 
 const eqLogLik = ll =>
@@ -55,11 +55,11 @@ const gradientDescent = (
   muMin,
   muMax,
   sigma2Min,
-  sigma2Max
+  sigma2Max,
 ) => {
   const muStart = (160 - muHat) / sigmaHat;
   const sigmaStart = 1.5;
-  const alpha = 0.01;
+  const alpha = 1;
   const mu = [muStart];
   const sigma = [sigmaStart];
   const points = [
@@ -70,14 +70,20 @@ const gradientDescent = (
   const y = sample.map(y => (y - muHat) / sigmaHat);
   let gradientMu = 1;
   let gradientSigma = 1;
+  let hessianMu = 1;
+  let hessianSigma = 1;
   let i = 1;
   while (Math.abs(gradientSigma) > TOOL || Math.abs(gradientMu) > TOOL) {
     const muPrev = mu[i - 1];
     const sigmaPrev = sigma[i - 1];
     gradientMu = dMu(10, muPrev, 0, sigmaPrev);
+    hessianMu = d2Mu(10, sigmaPrev)
     gradientSigma = dSigma2(y, muPrev, sigmaPrev);
-    mu.push(muPrev + alpha * gradientMu);
-    sigma.push(sigmaPrev + alpha * gradientSigma);
+    hessianSigma = d2Sigma2(y, muPrev, sigmaPrev);
+    console.log("hessianMu " + hessianMu);
+    console.log("hessianSigma " + hessianSigma);
+    mu.push(muPrev + alpha * -gradientMu/hessianMu);
+    sigma.push(sigmaPrev + alpha * -gradientSigma/hessianSigma);
     points.push({
       mu: mu[i] * sigmaHat + muHat,
       sigma: sigma[i] * Math.pow(sigmaHat, 2)
