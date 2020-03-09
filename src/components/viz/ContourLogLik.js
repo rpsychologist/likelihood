@@ -77,13 +77,13 @@ const gradientDescent = (
     const muPrev = mu[i - 1];
     const sigmaPrev = sigma[i - 1];
     gradientMu = dMu(10, muPrev, 0, sigmaPrev);
-    hessianMu = d2Mu(10, sigmaPrev)
+    hessianMu = 10/sigmaPrev;
     gradientSigma = dSigma2(y, muPrev, sigmaPrev);
-    hessianSigma = d2Sigma2(y, muPrev, sigmaPrev);
+    hessianSigma = 10/(2*sigmaPrev*sigmaPrev)
     console.log("hessianMu " + hessianMu);
     console.log("hessianSigma " + hessianSigma);
-    mu.push(muPrev + alpha * -gradientMu/hessianMu);
-    sigma.push(sigmaPrev + alpha * -gradientSigma/hessianSigma);
+    mu.push(muPrev + alpha * gradientMu/hessianMu);
+    sigma.push(sigmaPrev + alpha * gradientSigma/hessianSigma);
     points.push({
       mu: mu[i] * sigmaHat + muHat,
       sigma: sigma[i] * Math.pow(sigmaHat, 2)
