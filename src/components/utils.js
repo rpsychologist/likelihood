@@ -79,3 +79,9 @@ export const topTooltipPath = (width, height, offset, radius) => {
       H ${offset} 
       L 0,0 z`;
 };
+
+//
+export const quadraticApprox = (t, step, ll, gradient, sigma2) => {
+  const hessian = 10/sigma2;
+  return ll + gradient*(t/step) + 0.5 * -hessian * Math.pow(t/step, 2);
+}

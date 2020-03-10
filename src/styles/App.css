@@ -31,6 +31,11 @@ path#dist1 {
   stroke: #00b894;
   stroke-width: 4px;
 }
+.LogLikNewton {
+  fill: none;
+  stroke: #580634;
+  stroke-width: 2px;
+}
 .LogLikSigma {
   fill: none;
   stroke:#04725c;

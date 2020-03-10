@@ -57,7 +57,7 @@ const initialState = {
   sliderStep: 0.1,
   drawGradientPath: [{mu: 0, sigma: 1}],
   gradientDelay: null,
-  count: 0,
+  count: -1,
 };
 
 const vizReducer = (state, action) => {
@@ -97,7 +97,7 @@ const vizReducer = (state, action) => {
     case "resetGradientAscent": {
       return {
         ...state,
-        count: 0,
+        count: -1,
         drawGradientPath: [state.gradientPath[0]],
         gradientDelay: null,
         converged: false,
@@ -109,7 +109,7 @@ const vizReducer = (state, action) => {
         drawGradientPath: [value.gradientPath[0]],
         gradientPath: value.gradientPath,
         maxIter: value.gradientPath.length - 1,
-        count: 0,
+        count: -1,
         converged: false,
       }
     }

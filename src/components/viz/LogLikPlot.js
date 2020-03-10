@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import { scaleLinear } from "d3-scale";
-import { max, min } from "d3-array";
+import { range } from "d3-array";
 import { axisBottom, axisLeft } from "d3-axis";
 import { select } from "d3-selection";
 import { format } from "d3-format";
 import { line } from "d3-shape";
 import { logLikSum } from "../utils";
-import { topTooltipPath } from "../utils";
+import { topTooltipPath, quadraticApprox } from "../utils";
 import katex from "katex";
 
-const OverlapChart = props => {
+const logLikCart = props => {
   const vizRef = useRef(null);
 
   // Stuff
@@ -35,6 +35,10 @@ const OverlapChart = props => {
     llTheta = useMemo(() => logLikSum(sample, props.mu, props.sigma2, [props.mu, props.sigma2, props.sample]));
   }
 
+  const x_range = range(xMin, xMax, Math.abs(xMax - xMin) / 50);
+  const newtonParabola = x_range.map(x1 => {
+    return [x1, quadraticApprox(x1 - props.mu, 0.5, llTheta, deriv, props.sigma2)]
+  });
   const y_min = -100;
   const y_max = -20;
 
@@ -51,6 +55,7 @@ const OverlapChart = props => {
   // Scales and Axis
   const xAxis = axisBottom(xScale);
   const yAxis = axisLeft(yScale).ticks(4);
+
 
   // Line function
   const linex = line()
@@ -202,6 +207,7 @@ const OverlapChart = props => {
             y1={yScale(llTheta - delta * deriv)}
             y2={yScale(llTheta + delta * deriv)}
           />
+          <path d={linex(newtonParabola)} className="LogLikNewton" />
           </g>
      
         </g>
@@ -221,4 +227,4 @@ const OverlapChart = props => {
   );
 };
 
-export default OverlapChart;
+export default logLikCart;
