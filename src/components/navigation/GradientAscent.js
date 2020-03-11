@@ -4,10 +4,11 @@ import { VizDispatch } from "../../App";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
-import ReplayIcon from '@material-ui/icons/Replay';
+import ReplayIcon from "@material-ui/icons/Replay";
 import Tooltip from "@material-ui/core/Tooltip";
+import { newtonStep } from "../utils";
 
-const GradientAscent = ({ count, converged }) => {
+const GradientAscent = ({ count, converged, mu, muHat, sigma2, sample }) => {
   const dispatch = useContext(VizDispatch);
 
   return (
@@ -46,7 +47,10 @@ const GradientAscent = ({ count, converged }) => {
           onClick={() =>
             dispatch({
               name: "gradientAscent",
-              value: { increment: 1 }
+              value: {
+                increment: 1,
+                update: newtonStep(sample, mu, muHat, sigma2)
+              }
             })
           }
           aria-label="iterate 1 gradient ascent"

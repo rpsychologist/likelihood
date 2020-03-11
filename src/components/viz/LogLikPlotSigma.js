@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import { scaleLinear } from "d3-scale";
-import { max, min } from "d3-array";
+import { max, min, range } from "d3-array";
 import { axisBottom, axisLeft } from "d3-axis";
 import { select } from "d3-selection";
 import { format } from "d3-format";
 import { line } from "d3-shape";
 import { logLikSum } from "../utils";
-import { topTooltipPath } from "../utils";
+import { topTooltipPath, quadraticApprox } from "../utils";
 import katex from "katex";
 
 const OverlapChart = props => {
@@ -23,7 +23,7 @@ const OverlapChart = props => {
   // Axes min and max
   var yMin, yMax, llTheta;
 
-  yMax = 650;
+  yMax = 1500;
   yMin = 1;
   llTheta = useMemo(() => logLikSum(sample, props.mu, props.sigma2), [
     props.mu,
@@ -33,6 +33,22 @@ const OverlapChart = props => {
 
   const xMin = -100;
   const xMax = -20;
+
+  const hessian = -10 / (2 * props.sigma2 * props.sigma2);
+  const x_range = range(yMin, yMax, Math.abs(yMax - yMin) / 50);
+  const newtonParabola = x_range.map(x1 => {
+    return [x1, quadraticApprox(x1 - props.sigma2, 1, llTheta, deriv, hessian)];
+  });
+
+  const x1 = props.sigma2 + deriv / -hessian;
+  const x1LogLik = logLikSum(sample, props.mu, x1);
+  const x1ApproxLL = quadraticApprox(
+    x1 - props.sigma2,
+    1,
+    llTheta,
+    deriv,
+    hessian
+  );
 
   //const y_max = 0.05;
   // Create scales
@@ -181,7 +197,7 @@ const OverlapChart = props => {
   };
   const delta = yMax - yMin;
   return (
-    <svg width={props.width * 0.75} height={h + margin.bottom}>
+    <svg width={props.width} height={h + margin.bottom}>
       <g ref={vizRef}>
         <g className="viz">
           <g clipPath="url(#clipSigma)">
@@ -200,6 +216,28 @@ const OverlapChart = props => {
               y2={yScale(props.theta + delta)}
             />
           </g>
+          <g clipPath="url(#clipQuadApprox)">
+            <path d={linex(newtonParabola)} className="LogLikNewton" />
+            <line
+              className="LogLikNewton--maxima"
+              x1={xScale(xMin)}
+              x2={xScale(x1ApproxLL)}
+              y1={yScale(x1)}
+              y2={yScale(x1)}
+            />
+            <circle
+              cx={xScale(x1LogLik)}
+              cy={yScale(x1)}
+              r="5"
+              className="logLikNewtonX--logLik"
+            />
+            <circle
+              cx={xScale(x1ApproxLL)}
+              cy={yScale(x1)}
+              r="5"
+              className="logLikNewtonX--approx"
+            />
+          </g>
         </g>
       </g>
       <Tooltip
@@ -211,6 +249,9 @@ const OverlapChart = props => {
       <defs>
         <clipPath id="clipSigma">
           <rect id="clip-rect2" x="0" y="-10" width={w} height={h + 10} />
+        </clipPath>
+        <clipPath id="clipQuadApprox">
+          <rect id="clip-rect2" x="0" y="-10" width={h + 100} height={h + 10} />
         </clipPath>
       </defs>
     </svg>

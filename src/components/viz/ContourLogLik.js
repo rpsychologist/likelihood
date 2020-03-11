@@ -46,53 +46,6 @@ const createGrid = (muMin, muMax, sigma2Min, sigma2Max, sample) => {
   return values;
 };
 
-const gradientDescent = (
-  dMu,
-  dSigma2,
-  muHat,
-  sigmaHat,
-  sample,
-  muMin,
-  muMax,
-  sigma2Min,
-  sigma2Max,
-) => {
-  const muStart = (160 - muHat) / sigmaHat;
-  const sigmaStart = 1.5;
-  const alpha = 0.2;
-  const mu = [muStart];
-  const sigma = [sigmaStart];
-  const points = [
-    { mu: mu[0] * sigmaHat + muHat, sigma: sigma[0] * Math.pow(sigmaHat, 2) }
-  ];
-  const TOOL = 0.01;
-  // Normalize y
-  const y = sample.map(y => (y - muHat) / sigmaHat);
-  let gradientMu = 1;
-  let gradientSigma = 1;
-  let hessianMu = 1;
-  let hessianSigma = 1;
-  let i = 1;
-  while (Math.abs(gradientSigma) > TOOL || Math.abs(gradientMu) > TOOL) {
-    const muPrev = mu[i - 1];
-    const sigmaPrev = sigma[i - 1];
-    gradientMu = dMu(10, muPrev, 0, sigmaPrev);
-    hessianMu = 10/sigmaPrev;
-    gradientSigma = dSigma2(y, muPrev, sigmaPrev);
-    hessianSigma = 10/(2*sigmaPrev*sigmaPrev)
-    console.log("hessianMu " + hessianMu);
-    console.log("hessianSigma " + hessianSigma);
-    mu.push(muPrev + alpha * gradientMu/hessianMu);
-    sigma.push(sigmaPrev + alpha * gradientSigma/hessianSigma);
-    points.push({
-      mu: mu[i] * sigmaHat + muHat,
-      sigma: sigma[i] * Math.pow(sigmaHat, 2)
-    });
-    i++;
-  }
-  return points;
-};
-
 const ContourChart = props => {
   const vizRef = useRef(null);
   const dispatch = useContext(VizDispatch);
@@ -106,7 +59,7 @@ const ContourChart = props => {
   const muMax = props.muTheta + sigmaTheta * 5;
   const muMin = props.muTheta - sigmaTheta * 5;
   const sigma2MLE = props.sigma2Theta;
-  const sigma2Max = 650;
+  const sigma2Max = 1500;
   const sigma2Min = 1;
 
   // For gradient ascent illustration
@@ -117,23 +70,19 @@ const ContourChart = props => {
     });
   }, props.gradientDelay);
 
-  useEffect(() => {
+/*   useEffect(() => {
     const gradientPath = gradientDescent(
-      dMu,
-      dSigma2,
-      props.muHat,
-      Math.sqrt(props.sigma2Hat),
       sample,
-      muMin,
-      muMax,
-      sigma2Min,
-      sigma2Max
+      props.mu,
+      props.sigma2,
+      dMu,
+      dSigma2
     );
     dispatch({
       name: "newSampleGradientAscent",
       value: { gradientPath: gradientPath }
     });
-  }, [sample]);
+  }, [sample]); */
 
   const llMin = -300;
   const llMax = -20;

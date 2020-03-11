@@ -37,7 +37,7 @@ const logLikCart = props => {
 
   const x_range = range(xMin, xMax, Math.abs(xMax - xMin) / 50);
   const newtonParabola = x_range.map(x1 => {
-    return [x1, quadraticApprox(x1 - props.mu, 0.5, llTheta, deriv, props.sigma2)]
+    return [x1, quadraticApprox(x1 - props.mu, 1, llTheta, deriv, -10/props.sigma2)]
   });
   const y_min = -100;
   const y_max = -20;

@@ -33,8 +33,26 @@ path#dist1 {
 }
 .LogLikNewton {
   fill: none;
-  stroke: #580634;
+  stroke: #c0392b;
   stroke-width: 2px;
+  stroke-dasharray: 2 2;
+}
+circle.logLikNewtonX--logLik {
+  fill: #47494b;
+  fill-opacity: 0.5;
+  stroke: #47494b;
+  stroke-width: 2px;
+}
+circle.logLikNewtonX--approx {
+  fill: none;
+  stroke: #c0392b;
+  stroke-width: 2px;
+}
+.LogLikNewton--maxima {
+  fill: none;
+  stroke: #47494b;
+  stroke-width: 2px;
+  stroke-dasharray: 2 2;
 }
 .LogLikSigma {
   fill: none;
