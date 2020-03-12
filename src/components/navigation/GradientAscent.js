@@ -6,11 +6,35 @@ import IconButton from "@material-ui/core/IconButton";
 import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
 import ReplayIcon from "@material-ui/icons/Replay";
 import Tooltip from "@material-ui/core/Tooltip";
+import { useSpring, animated, interpolate } from 'react-spring'
 import { newtonStep } from "../utils";
+
+
+const Counter = ({current, next}) => {
+  const count = useSpring({from: {value: 0}, to: {value: 100}});
+
+  return (
+    <animated.div>
+      {count.value.interpolate(x => x * 10)}
+    </animated.div>
+  )
+}
+
+
 
 const GradientAscent = ({ count, converged, mu, muHat, sigma2, sample }) => {
   const dispatch = useContext(VizDispatch);
+  const iterate = (sample, mu, muHat, sigma2) => {
 
+    const next = newtonStep(sample, mu, muHat, sigma2);
+    dispatch({
+      name: "gradientAscent",
+      value: {
+        increment: 1,
+        update: next
+      }
+    })
+  }
   return (
     <div>
       <Typography variant="body1">
@@ -44,15 +68,7 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sample }) => {
       </Tooltip>
       <Tooltip title={converged ? "" : "1 iteration"}>
         <IconButton
-          onClick={() =>
-            dispatch({
-              name: "gradientAscent",
-              value: {
-                increment: 1,
-                update: newtonStep(sample, mu, muHat, sigma2)
-              }
-            })
-          }
+          onClick={() => iterate(sample, mu, muHat, sigma2)}
           aria-label="iterate 1 gradient ascent"
           disabled={converged}
         >
@@ -90,6 +106,8 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sample }) => {
       <Typography display="inline" variant="body2">
         Iterations: {count} {converged && "(converged)"}
       </Typography>
+      <Counter current={0} next={10} />
+ 
     </div>
   );
 };

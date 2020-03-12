@@ -48,6 +48,11 @@ circle.logLikNewtonX--approx {
   stroke: #c0392b;
   stroke-width: 2px;
 }
+circle.logLikNewtonX--test {
+  fill: red;
+  stroke: #a1920c;
+  stroke-width: 2px;
+}
 .LogLikNewton--maxima {
   fill: none;
   stroke: #47494b;

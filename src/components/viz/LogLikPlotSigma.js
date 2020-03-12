@@ -7,6 +7,7 @@ import { format } from "d3-format";
 import { line } from "d3-shape";
 import { logLikSum } from "../utils";
 import { topTooltipPath, quadraticApprox } from "../utils";
+import AnimatedCircle from "./AnimatedCircle";
 import katex from "katex";
 
 const OverlapChart = props => {
@@ -237,6 +238,8 @@ const OverlapChart = props => {
               r="5"
               className="logLikNewtonX--approx"
             />
+                        <AnimatedCircle x={100} y={props.sigma2} xScale={xScale} yScale={yScale} mu={props.mu} sample={sample}/>
+
           </g>
         </g>
       </g>
