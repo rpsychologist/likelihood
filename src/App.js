@@ -57,7 +57,7 @@ const initialState = {
   sliderStep: 0.1,
   drawGradientPath: [],
   gradientDelay: null,
-  count: -1,
+  count: 0,
 };
 
 const vizReducer = (state, action) => {
@@ -76,7 +76,7 @@ const vizReducer = (state, action) => {
       const newCount = state.count + value.increment;
       const count = newCount;
       const update = value.update.points;
-      const newPath= [...state.drawGradientPath, update];
+      const newPath = state.count == 0 ? [{mu: state.mu, sigma2: state.sigma2}, update] : [...state.drawGradientPath, update];
       return {
         ...state,
         mu: update.mu,
@@ -84,6 +84,19 @@ const vizReducer = (state, action) => {
         drawGradientPath: newPath,
         count: count,
         converged: value.update.converged,
+      };
+    }
+    case "gradientAscentDecrement": {
+      const newPath = state.drawGradientPath
+      newPath.pop()
+      const prev = newPath[newPath.length - 1]
+      console.log(prev)
+      return {
+        ...state,
+        mu: prev.mu,
+        sigma2: prev.sigma2,
+        drawGradientPath: newPath,
+        count: state.count - 1,
       };
     }
     case "runGradientAscent": {

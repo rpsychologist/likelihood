@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import { scaleLinear } from "d3-scale";
-import { max, min, range } from "d3-array";
 import { axisBottom, axisLeft } from "d3-axis";
 import { select } from "d3-selection";
 import { format } from "d3-format";
@@ -8,6 +7,8 @@ import { line } from "d3-shape";
 import { logLikSum } from "../utils";
 import { topTooltipPath, quadraticApprox } from "../utils";
 import AnimatedCircle from "./AnimatedCircle";
+import AnimatedPath from "./AnimatedPath";
+import NewtonParabola from "./NewtonParabola";
 import katex from "katex";
 
 const OverlapChart = props => {
@@ -36,20 +37,10 @@ const OverlapChart = props => {
   const xMax = -20;
 
   const hessian = -10 / (2 * props.sigma2 * props.sigma2);
-  const x_range = range(yMin, yMax, Math.abs(yMax - yMin) / 50);
-  const newtonParabola = x_range.map(x1 => {
-    return [x1, quadraticApprox(x1 - props.sigma2, 1, llTheta, deriv, hessian)];
-  });
 
-  const x1 = props.sigma2 + deriv / -hessian;
-  const x1LogLik = logLikSum(sample, props.mu, x1);
-  const x1ApproxLL = quadraticApprox(
-    x1 - props.sigma2,
-    1,
-    llTheta,
-    deriv,
-    hessian
-  );
+
+
+  //const x1LogLik = logLikSum(sample, props.mu, x1);
 
   //const y_max = 0.05;
   // Create scales
@@ -202,13 +193,13 @@ const OverlapChart = props => {
       <g ref={vizRef}>
         <g className="viz">
           <g clipPath="url(#clipSigma)">
-            <path d={linex(data1.data)} className="LogLikSigma" />
-            <circle
+            {/*  <path d={linex(data1.data)} className="LogLikSigma" /> */}
+{/*             <circle
               cx={xScale(llTheta)}
               cy={yScale(props.theta)}
               r="5"
               className="logLikX"
-            />
+            /> */}
             <line
               className="deriv"
               x1={xScale(llTheta - delta * deriv)}
@@ -218,37 +209,43 @@ const OverlapChart = props => {
             />
           </g>
           <g clipPath="url(#clipQuadApprox)">
-            <path d={linex(newtonParabola)} className="LogLikNewton" />
-            <line
-              className="LogLikNewton--maxima"
-              x1={xScale(xMin)}
-              x2={xScale(x1ApproxLL)}
-              y1={yScale(x1)}
-              y2={yScale(x1)}
-            />
-            <circle
+           
+     
+      {/*       <circle
               cx={xScale(x1LogLik)}
               cy={yScale(x1)}
               r="5"
               className="logLikNewtonX--logLik"
+            /> */}
+          
+            <AnimatedPath
+              data={data1.data}
+              x={100}
+              sigma2={props.sigma2}
+              xScale={xScale}
+              yScale={yScale}
+              linex={linex}
+              mu={props.mu}
+              sample={sample}
             />
-            <circle
-              cx={xScale(x1ApproxLL)}
-              cy={yScale(x1)}
-              r="5"
-              className="logLikNewtonX--approx"
+            <AnimatedCircle
+              x={100}
+              y={props.sigma2}
+              xScale={xScale}
+              yScale={yScale}
+              mu={props.mu}
+              sample={sample}
             />
-                        <AnimatedCircle x={100} y={props.sigma2} xScale={xScale} yScale={yScale} mu={props.mu} sample={sample}/>
-
+             <NewtonParabola  mu={props.mu} sigma2={props.sigma2} yMin={yMin} yMax={yMax} xMin={xMin} xScale={xScale} yScale={yScale} linex={linex} llTheta={llTheta} deriv={deriv} hessian={hessian}/>
           </g>
         </g>
       </g>
-      <Tooltip
+{/*       <Tooltip
         theta={props.theta}
         thetaLab={props.thetaLab}
         ll={llTheta}
         deriv={deriv}
-      />
+      /> */}
       <defs>
         <clipPath id="clipSigma">
           <rect id="clip-rect2" x="0" y="-10" width={w} height={h + 10} />

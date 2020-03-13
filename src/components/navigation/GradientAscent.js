@@ -35,6 +35,13 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sample }) => {
       }
     })
   }
+  const decrement = () => {
+    dispatch({
+      name: "gradientAscentDecrement",
+      value: {
+      }
+    })
+  }
   return (
     <div>
       <Typography variant="body1">
@@ -73,6 +80,15 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sample }) => {
           disabled={converged}
         >
           +1
+        </IconButton>
+      </Tooltip>
+      <Tooltip title={converged ? "" : "-1 iteration"}>
+        <IconButton
+          onClick={() => decrement()}
+          aria-label="iterate 1 gradient ascent"
+          disabled={converged}
+        >
+          -1
         </IconButton>
       </Tooltip>
       <Tooltip title={converged ? "" : "10 iterations"}>

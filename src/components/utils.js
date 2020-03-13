@@ -93,7 +93,6 @@ export const newtonStep = (
 ) => {
   const step = 1;
   const gradientMu = dMu(10, muPrev, muHat, sigma2Prev);
-  console.log("muPrev " + muPrev)
   const hessianMu = 10 / sigma2Prev;
   const gradientSigma2 = dSigma2(y, muPrev, sigma2Prev);
   const hessianSigma2 = -10 / (2 * sigma2Prev * sigma2Prev);
@@ -103,7 +102,6 @@ export const newtonStep = (
     mu: mu,
     sigma2: sigma2
   };
-  console.log("muNew " + mu)
   const TOOL = 0.0001;
   const convergence =
     Math.abs(gradientSigma2) < TOOL && Math.abs(gradientMu) < TOOL;
