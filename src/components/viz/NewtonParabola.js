@@ -18,12 +18,14 @@ const AnimatedPath = ({
 }) => {
 
 
-  const props = useSpring({
-    from: { opacity: 0, offset: 1000 },
-    to: { opacity: 1, offset: 0 },
-    reset: true,
-    config: { duration: 500 },
-  });
+  const [props, set] = useSpring(() => ({ opacity: 0, offset: 1000 }));
+
+
+set({
+  to: [{ offset: 0 }, {opacity: 1 } ],
+  from: { opacity: 0, offset: 1000 },
+  config: { duration: 500 },
+})
 
   const x_range = range(yMin, yMax, Math.abs(yMax - yMin) / 50);
   const newtonParabola = x_range.map(x1 => {
