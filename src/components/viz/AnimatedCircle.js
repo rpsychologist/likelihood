@@ -2,10 +2,17 @@ import React, { useEffect } from "react";
 import { useSpring, animated, interpolate } from "react-spring";
 import { logLikSum } from "../utils";
 
-const AnimatedCircle = ({ x, y, xScale, yScale, mu, sample }) => {
-  const [spring, set] = useSpring(() => ({ xy: [mu, y], immediate: false, config: {duration: 1000}}) );
+const AnimatedCircle = ({ x, y, xScale, yScale, mu, sample, count }) => {
+  const [spring, set] = useSpring(() => ({ xy: [mu, y], immediate: false, config: {duration: 500}}) );
 
-  set({xy: [mu, y]})
+  useEffect(() => {
+    set({xy: [mu, y], immediate: false})
+  }, [count])
+
+  useEffect(() => {
+    set({xy: [mu, y], immediate: true})
+  }, [y, mu, sample])
+
 
   return (
     <animated.circle

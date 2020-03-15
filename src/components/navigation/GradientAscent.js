@@ -82,11 +82,11 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sample }) => {
           +1
         </IconButton>
       </Tooltip>
-      <Tooltip title={converged ? "" : "-1 iteration"}>
+      <Tooltip title={count == 0 ? "" : "-1 iteration"}>
         <IconButton
           onClick={() => decrement()}
           aria-label="iterate 1 gradient ascent"
-          disabled={converged}
+          disabled={count == 0}
         >
           -1
         </IconButton>

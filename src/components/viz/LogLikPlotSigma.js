@@ -227,6 +227,7 @@ const OverlapChart = props => {
               linex={linex}
               mu={props.mu}
               sample={sample}
+              count={props.count}
             />
             <AnimatedCircle
               x={100}
@@ -235,6 +236,7 @@ const OverlapChart = props => {
               yScale={yScale}
               mu={props.mu}
               sample={sample}
+              count={props.count}
             />
              <NewtonParabola  mu={props.mu} sigma2={props.sigma2} yMin={yMin} yMax={yMax} xMin={xMin} xScale={xScale} yScale={yScale} linex={linex} llTheta={llTheta} deriv={deriv} hessian={hessian} count={props.count}/>
           </g>

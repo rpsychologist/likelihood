@@ -99,7 +99,7 @@ const ContourChart = props => {
     () =>
       line()
         .x(d => xScale(d.mu))
-        .y(d => yScale(d.sigma)),
+        .y(d => yScale(d.sigma2)),
     [w]
   );
 

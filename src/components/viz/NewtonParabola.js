@@ -46,7 +46,7 @@ const AnimatedPath = ({
           immediate: false,
         })
       }, 500);
-    }, 1000);
+    }, 500);
     return () => clearTimeout(timer);
   }, [count])
 
