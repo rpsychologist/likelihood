@@ -236,7 +236,7 @@ const OverlapChart = props => {
               mu={props.mu}
               sample={sample}
             />
-             <NewtonParabola  mu={props.mu} sigma2={props.sigma2} yMin={yMin} yMax={yMax} xMin={xMin} xScale={xScale} yScale={yScale} linex={linex} llTheta={llTheta} deriv={deriv} hessian={hessian}/>
+             <NewtonParabola  mu={props.mu} sigma2={props.sigma2} yMin={yMin} yMax={yMax} xMin={xMin} xScale={xScale} yScale={yScale} linex={linex} llTheta={llTheta} deriv={deriv} hessian={hessian} count={props.count}/>
           </g>
         </g>
       </g>

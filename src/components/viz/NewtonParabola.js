@@ -14,18 +14,42 @@ const AnimatedPath = ({
   linex,
   llTheta,
   deriv,
-  hessian
+  hessian,
+  count
 }) => {
 
 
   const [props, set] = useSpring(() => ({ opacity: 0, offset: 1000 }));
 
 
-set({
-  to: [{ offset: 0 }, {opacity: 1 } ],
-  from: { opacity: 0, offset: 1000 },
-  config: { duration: 500 },
-})
+  useEffect(() => {
+    // reset when count updates
+    set({
+      to: { offset: 1000, opacity: 0 },
+      config: { duration: 500 },
+      immediate: true,
+    })
+
+    const timer = setTimeout(() => {
+      // animate parabola first
+      set({
+        to: { offset: 0  },
+        config: { duration: 500 },
+        immediate: false,
+      })
+      setTimeout(() => {
+        // animate maxima objects
+        set({
+          to: { opacity: 1 },
+          config: { duration: 500 },
+          immediate: false,
+        })
+      }, 500);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [count])
+
+
 
   const x_range = range(yMin, yMax, Math.abs(yMax - yMin) / 50);
   const newtonParabola = x_range.map(x1 => {
