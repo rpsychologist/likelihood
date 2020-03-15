@@ -30,6 +30,7 @@ const AnimatedPath = ({
       immediate: true,
     })
 
+    // Run after AnimatedPath/Circle finishes
     const timer = setTimeout(() => {
       // animate parabola first
       set({
