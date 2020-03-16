@@ -2,16 +2,10 @@ import React, { useEffect } from "react";
 import { useSpring, animated, interpolate } from "react-spring";
 import { logLikSum } from "../utils";
 
-const AnimatedPath = ({ data, x, sigma2, xScale, yScale, linex, mu, sample, count }) => {
-  const [val, set] = useSpring(() =>  ({value: mu, immediate: false, delay: 0, config: {duration: 500}} ));
+const AnimatedPath = ({ data, x, sigma2, xScale, yScale, linex, mu, sample, animating }) => {
+  const [val, set] = useSpring(() =>  ({value: mu, immediate: false, config: {duration: 500}} ));
 
-  useEffect(() => {
-    set({value: mu, delay: 0, immediate: false})
-  }, [count])
-
-  useEffect(() => {
-    set({value: mu, delay: 0, immediate: true}, [sample, mu])
-  }, [sample, mu])
+  set({value: mu, immediate: !animating})
 
   const interp = (mu) => {
     const interpLine = data.map(d => ([d[0], logLikSum(sample, mu, d[0])]));

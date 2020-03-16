@@ -227,16 +227,17 @@ const OverlapChart = props => {
               linex={linex}
               mu={props.mu}
               sample={sample}
-              count={props.count}
+              animating={props.animating}
             />
             <AnimatedCircle
-              x={100}
+              x={props.mu}
+              funcX={(x,y) => logLikSum(sample, x, y)}
               y={props.sigma2}
               xScale={xScale}
               yScale={yScale}
-              mu={props.mu}
               sample={sample}
               count={props.count}
+              animating={props.animating}
             />
              <NewtonParabola  mu={props.mu} sigma2={props.sigma2} yMin={yMin} yMax={yMax} xMin={xMin} xScale={xScale} yScale={yScale} linex={linex} llTheta={llTheta} deriv={deriv} hessian={hessian} count={props.count}/>
           </g>

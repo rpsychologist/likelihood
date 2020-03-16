@@ -10,18 +10,6 @@ import { useSpring, animated, interpolate } from 'react-spring'
 import { newtonStep } from "../utils";
 
 
-const Counter = ({current, next}) => {
-  const count = useSpring({from: {value: 0}, to: {value: 100}});
-
-  return (
-    <animated.div>
-      {count.value.interpolate(x => x * 10)}
-    </animated.div>
-  )
-}
-
-
-
 const GradientAscent = ({ count, converged, mu, muHat, sigma2, sigma2Hat, sample }) => {
   const dispatch = useContext(VizDispatch);
   const iterate = (sample, mu, muHat, sigma2) => {
@@ -122,8 +110,6 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sigma2Hat, sample
       <Typography display="inline" variant="body2">
         Iterations: {count} {converged && "(converged)"}
       </Typography>
-      <Counter current={0} next={10} />
- 
     </div>
   );
 };

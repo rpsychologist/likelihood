@@ -158,3 +158,10 @@ line.deriv {
 circle.logLikX {
   fill: #000000;
 }
+
+g.draggable {
+  cursor: -webkit-grab;
+}
+g.draggable:active {
+  cursor: -webkit-grabbing;
+}

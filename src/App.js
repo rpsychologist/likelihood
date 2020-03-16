@@ -57,6 +57,7 @@ const initialState = {
   sliderStep: 0.1,
   drawGradientPath: [],
   gradientDelay: null,
+  animating: false,
   count: 0,
 };
 
@@ -69,7 +70,15 @@ const vizReducer = (state, action) => {
     case "mu": {
       return {
         ...state,
-        [name]: round(value)
+        [name]: round(value),
+        animating: false,
+      };
+    }
+    case "contourDrag": {
+      return {
+        ...state,
+        mu: value.mu,
+        sigma2: value.sigma2
       };
     }
     case "gradientAscent": {
@@ -88,6 +97,7 @@ const vizReducer = (state, action) => {
         count: count,
         convergedHistory: convergedHistory,
         converged: convergedCurrent,
+        animating: true,
       };
     }
     case "gradientAscentDecrement": {
@@ -105,6 +115,7 @@ const vizReducer = (state, action) => {
         count: state.count - 1,
         convergedHistory: convergedHistory,
         converged: convergedCurrent,
+        animating: true,
       };
     }
     case "runGradientAscent": {

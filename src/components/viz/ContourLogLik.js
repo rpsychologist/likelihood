@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo, useContext } from "react";
+import { useSpring, animated, interpolate } from "react-spring";
+import { useDrag } from 'react-use-gesture'
 import useInterval from "@use-it/interval";
 import { VizDispatch } from "../../App";
 import { scaleLinear, scaleLog } from "d3-scale";
@@ -13,7 +15,6 @@ import { line } from "d3-shape";
 import { contours } from "d3-contour";
 import { logLikSum } from "../utils";
 import katex from "katex";
-
 import { dMu, d2Mu, dSigma2, d2Sigma2 } from "../utils";
 import Tooltip from "./Tooltip";
 
@@ -63,6 +64,27 @@ const ContourChart = props => {
   const sigma2Min = 1;
 
   // For gradient ascent illustration
+  const [spring, set] = useSpring(() => ({
+    xy: [props.mu, props.sigma2],
+    immediate: false,
+    config: { duration: 500 }
+  }));
+
+  const bind = useDrag(({ down, movement: [mx, my], initial, previous }) => {
+
+    console.log(initial)
+    console.log(xScale.invert(props.mu) + margin.left + margin.right)
+    console.log(yScale.invert(props.sigma2))
+    const mu = xScale.invert(initial[0] - margin.left - margin.right - 10 + mx);
+    const sigma2 = sigma2Max + yScale.invert(initial[1] - h + my - margin.bottom/2  )
+      dispatch({
+      name: "contourDrag",
+      value: {mu: mu, sigma2: sigma2}
+    })  
+  }
+  )
+
+
   useInterval(() => {
     dispatch({
       name: "gradientAscent",
@@ -70,7 +92,9 @@ const ContourChart = props => {
     });
   }, props.gradientDelay);
 
-/*   useEffect(() => {
+  set({ xy: [props.mu, props.sigma2], immediate: !props.animating });
+
+  /*   useEffect(() => {
     const gradientPath = gradientDescent(
       sample,
       props.mu,
@@ -178,32 +202,43 @@ const ContourChart = props => {
 
   return (
     <svg width={props.width} height={h + margin.bottom}>
-      <g ref={vizRef}>
+      <g ref={vizRef} >
         <g
           className="viz"
           transform={"translate(" + margin.left + "," + 0 + ")"}
         >
           {contourPaths}
-          <line
+          <animated.line
             x1={xScale(muMin)}
             x2={xScale(muMax)}
-            y1={yScale(props.sigma2)}
-            y2={yScale(props.sigma2)}
+            y1={0}
+            y2={0}
             className="LogLikMu"
+            transform={spring.xy.interpolate(
+              (x, y) => `translate(0, ${yScale(y)})`
+            )}
           />
-          <line
+          <animated.line
             y1={yScale(sigma2Min)}
             y2={yScale(sigma2Max)}
-            x1={xScale(props.mu)}
-            x2={xScale(props.mu)}
+            x1={0}
+            x2={0}
+            transform={spring.xy.interpolate(
+              (x, y) => `translate(${xScale(x)}, 0)`
+            )}
             className="LogLikSigma"
           />
-          <circle
-            cx={xScale(props.mu)}
-            cy={yScale(props.sigma2)}
-            r="5"
-            className="logLikX"
-          />
+
+          <animated.g 
+          {...bind()}
+            transform={spring.xy.interpolate(
+              (x, y) => `translate(${xScale(x)}, ${yScale(y)})`
+            )}
+            className="draggable"
+          >
+            <circle cx={0} cy={0} r="5" className="logLikX" />
+            <Tooltip x={0} y={0} equation={eqLogLik(ll)} margin={margin} />
+          </animated.g>
           <path d={linex(props.drawGradientPath)} className="gradientDescent" />
           {/*          <circle
             cx={xScale(props.muHat)}
@@ -222,12 +257,6 @@ const ContourChart = props => {
             strokeWidth="3px"
           />
         </g>
-        <Tooltip
-          x={xScale(props.mu) + margin.left}
-          y={yScale(props.sigma2)}
-          equation={eqLogLik(ll)}
-          margin={margin}
-        />
       </g>
     </svg>
   );
