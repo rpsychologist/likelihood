@@ -77,26 +77,34 @@ const vizReducer = (state, action) => {
       const count = newCount;
       const update = value.update.points;
       const newPath = state.count == 0 ? [{mu: state.mu, sigma2: state.sigma2}, update] : [...state.drawGradientPath, update];
+      const convergedCurrent = value.update.converged;
+      const convergedHistory = state.count == 0 ? [false] : [...state.convergedHistory, convergedCurrent];
+
       return {
         ...state,
         mu: update.mu,
         sigma2: update.sigma2,
         drawGradientPath: newPath,
         count: count,
-        converged: value.update.converged,
+        convergedHistory: convergedHistory,
+        converged: convergedCurrent,
       };
     }
     case "gradientAscentDecrement": {
       const newPath = state.drawGradientPath
       newPath.pop()
       const prev = newPath[newPath.length - 1]
-      console.log(prev)
+      const convergedHistory = state.convergedHistory;
+      convergedHistory.pop();
+      const convergedCurrent = convergedHistory[convergedHistory.length - 1];
       return {
         ...state,
         mu: prev.mu,
         sigma2: prev.sigma2,
         drawGradientPath: newPath,
         count: state.count - 1,
+        convergedHistory: convergedHistory,
+        converged: convergedCurrent,
       };
     }
     case "runGradientAscent": {

@@ -22,11 +22,11 @@ const Counter = ({current, next}) => {
 
 
 
-const GradientAscent = ({ count, converged, mu, muHat, sigma2, sample }) => {
+const GradientAscent = ({ count, converged, mu, muHat, sigma2, sigma2Hat, sample }) => {
   const dispatch = useContext(VizDispatch);
   const iterate = (sample, mu, muHat, sigma2) => {
 
-    const next = newtonStep(sample, mu, muHat, sigma2);
+    const next = newtonStep(sample, mu, muHat, sigma2, sigma2Hat);
     dispatch({
       name: "gradientAscent",
       value: {

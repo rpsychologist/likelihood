@@ -90,6 +90,7 @@ export const newtonStep = (
   muPrev,
   muHat,
   sigma2Prev,
+  sigma2MLE
 ) => {
   const step = 1;
   const gradientMu = dMu(10, muPrev, muHat, sigma2Prev);
@@ -103,7 +104,9 @@ export const newtonStep = (
     sigma2: sigma2
   };
   const TOOL = 0.0001;
+
+
   const convergence =
-    Math.abs(gradientSigma2) < TOOL && Math.abs(gradientMu) < TOOL;
+    Math.abs(sigma2 - sigma2MLE) < TOOL && Math.abs(mu - muHat) < TOOL;
   return { points: points, converged: convergence };
 };
