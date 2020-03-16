@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo, useContext } from "react";
 import { useSpring, animated, interpolate } from "react-spring";
-import { useDrag } from 'react-use-gesture'
+import { useDrag } from "react-use-gesture";
 import useInterval from "@use-it/interval";
 import { VizDispatch } from "../../App";
 import { scaleLinear, scaleLog } from "d3-scale";
@@ -70,20 +70,26 @@ const ContourChart = props => {
     config: { duration: 500 }
   }));
 
-  const bind = useDrag(({ down, movement: [mx, my], initial, previous }) => {
+  const bind = useDrag(({ movement: [mx, my], first, memo }) => {
+    let muStart, sigma2Start;
+    if (first) {
+      muStart = props.mu;
+      sigma2Start = props.sigma2;
+    } else {
+      muStart = memo[0];
+      sigma2Start = memo[1];
+    }
 
-    console.log(initial)
-    console.log(xScale.invert(props.mu) + margin.left + margin.right)
-    console.log(yScale.invert(props.sigma2))
-    const mu = xScale.invert(initial[0] - margin.left - margin.right - 10 + mx);
-    const sigma2 = sigma2Max + yScale.invert(initial[1] - h + my - margin.bottom/2  )
-      dispatch({
+    const mu = xScale.invert(xScale(muStart) + mx);
+    const sigma2 = yScale.invert(yScale(sigma2Start) + my);
+
+    dispatch({
       name: "contourDrag",
-      value: {mu: mu, sigma2: sigma2}
-    })  
+      value: { mu: mu, sigma2: sigma2 }
+    });
+    return [muStart, sigma2Start];
   }
-  )
-
+  );
 
   useInterval(() => {
     dispatch({
@@ -202,7 +208,7 @@ const ContourChart = props => {
 
   return (
     <svg width={props.width} height={h + margin.bottom}>
-      <g ref={vizRef} >
+      <g ref={vizRef}>
         <g
           className="viz"
           transform={"translate(" + margin.left + "," + 0 + ")"}
@@ -229,8 +235,8 @@ const ContourChart = props => {
             className="LogLikSigma"
           />
 
-          <animated.g 
-          {...bind()}
+          <animated.g
+            {...bind()}
             transform={spring.xy.interpolate(
               (x, y) => `translate(${xScale(x)}, ${yScale(y)})`
             )}

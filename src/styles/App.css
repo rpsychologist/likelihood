@@ -129,6 +129,7 @@ line.score.highlight  {
   display: -webkit-inline-box;
   -webkit-box-pack: center;
   -webkit-box-align: center;
+  user-select: none;
 }
 .vizTooltip p {
   text-align: center;

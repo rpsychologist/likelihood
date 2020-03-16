@@ -78,7 +78,8 @@ const vizReducer = (state, action) => {
       return {
         ...state,
         mu: value.mu,
-        sigma2: value.sigma2
+        sigma2: value.sigma2,
+        animating: false,
       };
     }
     case "gradientAscent": {
