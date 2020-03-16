@@ -15,7 +15,7 @@ import { line } from "d3-shape";
 import { contours } from "d3-contour";
 import { logLikSum } from "../utils";
 import katex from "katex";
-import { dMu, d2Mu, dSigma2, d2Sigma2 } from "../utils";
+import { dMu, d2Mu, dSigma2, d2Sigma2, newtonStep } from "../utils";
 import Tooltip from "./Tooltip";
 
 const eqLogLik = ll =>
@@ -71,31 +71,30 @@ const ContourChart = props => {
   }));
 
   const bind = useDrag(({ movement: [mx, my], first, memo }) => {
-    let muStart, sigma2Start;
-    if (first) {
-      muStart = props.mu;
-      sigma2Start = props.sigma2;
-    } else {
-      muStart = memo[0];
-      sigma2Start = memo[1];
-    }
-
+    const muStart = first ? props.mu : memo[0];
+    const sigma2Start = first ? props.sigma2 : memo[1];
     const mu = xScale.invert(xScale(muStart) + mx);
     const sigma2 = yScale.invert(yScale(sigma2Start) + my);
-
     dispatch({
       name: "contourDrag",
       value: { mu: mu, sigma2: sigma2 }
     });
     return [muStart, sigma2Start];
-  }
-  );
+  });
 
-  useInterval(() => {
+  const iterate = ({sample, mu, muHat, sigma2, sigma2Hat}) => {
+    const next = newtonStep(sample, mu, muHat, sigma2, sigma2Hat);
     dispatch({
       name: "gradientAscent",
-      value: { increment: 10 }
+      value: {
+        increment: 1,
+        update: next
+      }
     });
+  };
+
+  useInterval(() => {
+    iterate({...props});
   }, props.gradientDelay);
 
   set({ xy: [props.mu, props.sigma2], immediate: !props.animating });

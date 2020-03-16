@@ -52,7 +52,7 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sigma2Hat, sample
           onClick={() =>
             dispatch({
               name: "runGradientAscent",
-              value: { delay: 16 }
+              value: { delay: 1000 }
             })
           }
           aria-label="run gradient ascent"

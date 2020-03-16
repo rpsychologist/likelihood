@@ -99,6 +99,7 @@ const vizReducer = (state, action) => {
         convergedHistory: convergedHistory,
         converged: convergedCurrent,
         animating: true,
+        gradientDelay: convergedCurrent ? null : state.gradientDelaySetting,
       };
     }
     case "gradientAscentDecrement": {
@@ -122,16 +123,21 @@ const vizReducer = (state, action) => {
     case "runGradientAscent": {
       return {
         ...state,
-        gradientDelay: value.delay,
+        gradientDelay: 0,
+        gradientDelaySetting: value.delay,
       };
     }
     case "resetGradientAscent": {
+      const path = state.drawGradientPath[0];
       return {
         ...state,
         count: 0,
-        drawGradientPath: [],
+        mu: path.mu,
+        sigma2: path.sigma2,
+        drawGradientPath: path,
         gradientDelay: null,
         converged: false,
+        animating: false,
       };
     }
     case "newSampleGradientAscent": {
