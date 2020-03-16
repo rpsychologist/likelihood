@@ -175,17 +175,6 @@ const vizReducer = (state, action) => {
         muNull: value
       };
     }
-    case "n":
-    case "test":
-    case "xLabel":
-    case "muZeroLabel":
-    case "muOneLabel":
-    case "sliderMax":
-    case "sliderStep":
-      return {
-        ...state,
-        [name]: value
-      };
   }
 };
 export const VizDispatch = createContext(null);
