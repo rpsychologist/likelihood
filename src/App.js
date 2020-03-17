@@ -136,6 +136,7 @@ const vizReducer = (state, action) => {
         sigma2: path.sigma2,
         drawGradientPath: path,
         gradientDelay: null,
+        gradientDelaySetting: null,
         converged: false,
         animating: false,
       };

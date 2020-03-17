@@ -1,4 +1,7 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useContext } from "react";
+import { useSpring, animated, interpolate } from "react-spring";
+import { useDrag } from "react-use-gesture";
+import { VizDispatch } from "../../App";
 import { scaleLinear } from "d3-scale";
 import { axisBottom, axisLeft } from "d3-axis";
 import { select } from "d3-selection";
@@ -13,7 +16,7 @@ import katex from "katex";
 
 const OverlapChart = props => {
   const vizRef = useRef(null);
-
+  const dispatch = useContext(VizDispatch);
   // Stuff
   const margin = { top: 0, right: 20, bottom: 40, left: 50 };
   const durationTime = 200;
@@ -32,6 +35,23 @@ const OverlapChart = props => {
     props.sigma2,
     props.sample
   ]);
+
+  const [spring, set] = useSpring(() => ({ xy: [props.mu, props.sigma2], immediate: false, config: {duration: 500}}) );
+
+  set({xy: [props.mu, props.sigma2], immediate: !props.animating})
+
+  const bind = useDrag(({ movement: [mx, my], first, memo }) => {
+    const muStart = first ? props.mu : memo[0];
+    const sigma2Start = first ? props.sigma2 : memo[1];
+    const mu = xScale.invert(xScale(muStart) + mx);
+    const sigma2 = yScale.invert(yScale(sigma2Start) + my);
+    dispatch({
+      name: "contourDrag",
+      value: { mu: props.mu, sigma2: sigma2 }
+    });
+    return [muStart, sigma2Start];
+  });
+
 
   const xMin = -100;
   const xMax = -20;
@@ -75,8 +95,8 @@ const OverlapChart = props => {
 
   // Tooltip
   const Tooltip = ({ theta, thetaLab, ll, deriv }) => {
-    const x = xScale(ll);
-    const y = yScale(theta);
+    const x = 0;
+    const y = 0;
     const width = 40;
     const path = topTooltipPath(width, 100, 10, 10);
     const thetaSymb = thetaLab == "mu" ? "mu" : "sigma^2";
@@ -200,7 +220,7 @@ const OverlapChart = props => {
               r="5"
               className="logLikX"
             /> */}
-            <line
+            <animated.line
               className="deriv"
               x1={xScale(llTheta - delta * deriv)}
               x2={xScale(llTheta + delta * deriv)}
@@ -243,12 +263,20 @@ const OverlapChart = props => {
           </g>
         </g>
       </g>
-{/*       <Tooltip
+      <animated.g
+       {...bind()}
+            transform={spring.xy.interpolate(
+              (x, y) => `translate(${xScale(logLikSum(sample, x, y))}, ${yScale(y)})`
+            )}
+            className="draggable"
+          >
+       <Tooltip
         theta={props.theta}
         thetaLab={props.thetaLab}
         ll={llTheta}
         deriv={deriv}
-      /> */}
+      /> 
+      </animated.g>
       <defs>
         <clipPath id="clipSigma">
           <rect id="clip-rect2" x="0" y="-10" width={w} height={h + 10} />
