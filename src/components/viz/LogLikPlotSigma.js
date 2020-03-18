@@ -8,7 +8,7 @@ import { select } from "d3-selection";
 import { format } from "d3-format";
 import { line } from "d3-shape";
 import { logLikSum } from "../utils";
-import { topTooltipPath, quadraticApprox } from "../utils";
+import { topTooltipPath, quadraticApprox, dSigma2 } from "../utils";
 import AnimatedCircle from "./AnimatedCircle";
 import AnimatedPath from "./AnimatedPath";
 import NewtonParabola from "./NewtonParabola";
@@ -36,9 +36,13 @@ const OverlapChart = props => {
     props.sample
   ]);
 
-  const [spring, set] = useSpring(() => ({ xy: [props.mu, props.sigma2], immediate: false, config: {duration: 500}}) );
+  const [spring, set] = useSpring(() => ({
+    xy: [props.mu, props.sigma2],
+    immediate: false,
+    config: { duration: 500 }
+  }));
 
-  set({xy: [props.mu, props.sigma2], immediate: !props.animating})
+  set({ xy: [props.mu, props.sigma2], immediate: !props.animating });
 
   const bind = useDrag(({ movement: [mx, my], first, memo }) => {
     const muStart = first ? props.mu : memo[0];
@@ -52,13 +56,10 @@ const OverlapChart = props => {
     return [muStart, sigma2Start];
   });
 
-
   const xMin = -100;
   const xMax = -20;
 
   const hessian = -10 / (2 * props.sigma2 * props.sigma2);
-
-
 
   //const x1LogLik = logLikSum(sample, props.mu, x1);
 
@@ -208,36 +209,30 @@ const OverlapChart = props => {
       .text("σ²");
   };
   const delta = yMax - yMin;
+
+  console.log("yscale " + yScale(yMax));
+  console.log("xscale " + xScale(xMin));
   return (
     <svg width={props.width} height={h + margin.bottom}>
       <g ref={vizRef}>
         <g className="viz">
           <g clipPath="url(#clipSigma)">
             {/*  <path d={linex(data1.data)} className="LogLikSigma" /> */}
-{/*             <circle
+            {/*             <circle
               cx={xScale(llTheta)}
               cy={yScale(props.theta)}
               r="5"
               className="logLikX"
             /> */}
-            <animated.line
-              className="deriv"
-              x1={xScale(llTheta - delta * deriv)}
-              x2={xScale(llTheta + delta * deriv)}
-              y1={yScale(props.theta - delta)}
-              y2={yScale(props.theta + delta)}
-            />
           </g>
           <g clipPath="url(#clipQuadApprox)">
-           
-     
-      {/*       <circle
+            {/*       <circle
               cx={xScale(x1LogLik)}
               cy={yScale(x1)}
               r="5"
               className="logLikNewtonX--logLik"
             /> */}
-          
+
             <AnimatedPath
               data={data1.data}
               x={100}
@@ -251,7 +246,7 @@ const OverlapChart = props => {
             />
             <AnimatedCircle
               x={props.mu}
-              funcX={(x,y) => logLikSum(sample, x, y)}
+              funcX={(x, y) => logLikSum(sample, x, y)}
               y={props.sigma2}
               xScale={xScale}
               yScale={yScale}
@@ -259,23 +254,48 @@ const OverlapChart = props => {
               count={props.count}
               animating={props.animating}
             />
-             <NewtonParabola  mu={props.mu} sigma2={props.sigma2} yMin={yMin} yMax={yMax} xMin={xMin} xScale={xScale} yScale={yScale} linex={linex} llTheta={llTheta} deriv={deriv} hessian={hessian} count={props.count}/>
+            <NewtonParabola
+              mu={props.mu}
+              sigma2={props.sigma2}
+              yMin={yMin}
+              yMax={yMax}
+              xMin={xMin}
+              xScale={xScale}
+              yScale={yScale}
+              linex={linex}
+              llTheta={llTheta}
+              deriv={deriv}
+              hessian={hessian}
+              count={props.count}
+            />
           </g>
         </g>
       </g>
       <animated.g
-       {...bind()}
-            transform={spring.xy.interpolate(
-              (x, y) => `translate(${xScale(logLikSum(sample, x, y))}, ${yScale(y)})`
-            )}
-            className="draggable"
-          >
-       <Tooltip
-        theta={props.theta}
-        thetaLab={props.thetaLab}
-        ll={llTheta}
-        deriv={deriv}
-      /> 
+        {...bind()}
+        transform={spring.xy.interpolate(
+          (x, y) =>
+            `translate(${xScale(logLikSum(sample, x, y))}, ${yScale(y)})`
+        )}
+        className="draggable"
+      >
+        <animated.line
+          className="deriv"
+          x1={spring.xy.interpolate(
+            (x, y) => margin.left + xScale(xMin - delta * dSigma2(sample, x, y))
+          )}
+          x2={spring.xy.interpolate(
+            (x, y) => margin.left + xScale(xMin + delta * dSigma2(sample, x, y))
+          )}
+          y1={yScale(yMax - delta)}
+          y2={yScale(yMax + delta)}
+        />
+        <Tooltip
+          theta={props.theta}
+          thetaLab={props.thetaLab}
+          ll={llTheta}
+          deriv={deriv}
+        />
       </animated.g>
       <defs>
         <clipPath id="clipSigma">
