@@ -141,7 +141,7 @@ const vizReducer = (state, action) => {
       return {
         ...state,
         algoDelay: 0,
-        algoDelaySetting: state.algo == "gradientAscent" ? 1 : value.delay
+        algoDelaySetting: state.algo == "gradientAscent" ? 0 : value.delay
       };
     }
     case "algoReset": {

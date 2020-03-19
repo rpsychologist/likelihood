@@ -115,7 +115,7 @@ export const gradientStep = ({
   sigma2,
   sigma2Hat}) => {
 
-  const step = 0.01;
+  const step = 0.1;
   const sigmaHat = Math.sqrt(sigma2Hat);
   const muPrev = (mu - muHat)/sigmaHat
   const sigma2Prev = sigma2/sigma2Hat
