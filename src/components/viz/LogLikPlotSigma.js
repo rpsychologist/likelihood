@@ -210,8 +210,6 @@ const OverlapChart = props => {
   };
   const delta = yMax - yMin;
 
-  console.log("yscale " + yScale(yMax));
-  console.log("xscale " + xScale(xMin));
   return (
     <svg width={props.width} height={h + margin.bottom}>
       <g ref={vizRef}>
@@ -244,7 +242,7 @@ const OverlapChart = props => {
               sample={sample}
               animating={props.animating}
             />
-            <AnimatedCircle
+{/*             <AnimatedCircle
               x={props.mu}
               funcX={(x, y) => logLikSum(sample, x, y)}
               y={props.sigma2}
@@ -253,7 +251,7 @@ const OverlapChart = props => {
               sample={sample}
               count={props.count}
               animating={props.animating}
-            />
+            /> */}
             <NewtonParabola
               mu={props.mu}
               sigma2={props.sigma2}
@@ -279,6 +277,23 @@ const OverlapChart = props => {
             )}
             className="draggable"
           >
+            {/*                   <AnimatedCircle
+              x={props.mu}
+              funcX={(x, y) => logLikSum(sample, x, y)}
+              y={props.sigma2}
+              xScale={xScale}
+              yScale={yScale}
+              sample={sample}
+              count={props.count}
+              animating={props.animating}
+            /> */}
+
+            <circle
+              cx={margin.left}
+              cy={0}
+              r="5"
+              className="logLikNewtonX--test"
+            />
             <animated.line
               className="deriv"
               x1={spring.xy.interpolate(
@@ -308,7 +323,13 @@ const OverlapChart = props => {
           <rect id="clip-rect2" x="0" y="-10" width={w} height={h + 10} />
         </clipPath>
         <clipPath id="clipSigma2">
-          <rect id="clip-rect2" x={margin.left} y={-10} width={w + 100} height={h + 10} />
+          <rect
+            id="clip-rect2"
+            x={margin.left}
+            y={-10}
+            width={w + 100}
+            height={h + 10}
+          />
         </clipPath>
         <clipPath id="clipQuadApprox">
           <rect id="clip-rect2" x="0" y="-10" width={h + 100} height={h + 10} />

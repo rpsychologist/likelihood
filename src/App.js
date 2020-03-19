@@ -58,7 +58,7 @@ const initialState = {
   drawGradientPath: [],
   gradientDelay: null,
   animating: false,
-  count: 0,
+  count: 0
 };
 
 const vizReducer = (state, action) => {
@@ -71,7 +71,7 @@ const vizReducer = (state, action) => {
       return {
         ...state,
         [name]: round(value),
-        animating: false,
+        animating: false
       };
     }
     case "contourDrag": {
@@ -79,17 +79,22 @@ const vizReducer = (state, action) => {
         ...state,
         mu: value.mu,
         sigma2: value.sigma2,
-        animating: false,
+        animating: false
       };
     }
     case "gradientAscent": {
       const newCount = state.count + value.increment;
       const count = newCount;
       const update = value.update.points;
-      const newPath = state.count == 0 ? [{mu: state.mu, sigma2: state.sigma2}, update] : [...state.drawGradientPath, update];
+      const newPath =
+        state.count == 0
+          ? [{ mu: state.mu, sigma2: state.sigma2 }, update]
+          : [...state.drawGradientPath, update];
       const convergedCurrent = value.update.converged;
-      const convergedHistory = state.count == 0 ? [false] : [...state.convergedHistory, convergedCurrent];
-
+      const convergedHistory =
+        state.count == 0
+          ? [false]
+          : [...state.convergedHistory, convergedCurrent];
       return {
         ...state,
         mu: update.mu,
@@ -100,12 +105,13 @@ const vizReducer = (state, action) => {
         converged: convergedCurrent,
         animating: true,
         gradientDelay: convergedCurrent ? null : state.gradientDelaySetting,
+        gradientDelaySetting: convergedCurrent ? null : state.gradientDelaySetting
       };
     }
     case "gradientAscentDecrement": {
-      const newPath = state.drawGradientPath
-      newPath.pop()
-      const prev = newPath[newPath.length - 1]
+      const newPath = state.drawGradientPath;
+      newPath.pop();
+      const prev = newPath[newPath.length - 1];
       const convergedHistory = state.convergedHistory;
       convergedHistory.pop();
       const convergedCurrent = convergedHistory[convergedHistory.length - 1];
@@ -117,14 +123,14 @@ const vizReducer = (state, action) => {
         count: state.count - 1,
         convergedHistory: convergedHistory,
         converged: convergedCurrent,
-        animating: true,
+        animating: true
       };
     }
     case "runGradientAscent": {
       return {
         ...state,
         gradientDelay: 0,
-        gradientDelaySetting: value.delay,
+        gradientDelaySetting: value.delay
       };
     }
     case "resetGradientAscent": {
@@ -138,7 +144,7 @@ const vizReducer = (state, action) => {
         gradientDelay: null,
         gradientDelaySetting: null,
         converged: false,
-        animating: false,
+        animating: false
       };
     }
     case "newSampleGradientAscent": {
@@ -148,8 +154,8 @@ const vizReducer = (state, action) => {
         gradientPath: value.gradientPath.points,
         maxIter: value.gradientPath.length - 1,
         count: -1,
-        converged: false,
-      }
+        converged: false
+      };
     }
     case "sample": {
       const muHat = calcMean(value);
@@ -180,7 +186,9 @@ const vizReducer = (state, action) => {
 };
 export const VizDispatch = createContext(null);
 export const drawSample = (n, M, sigma2) =>
-  [...Array(n)].map(() => randomNormal(M, Math.sqrt(sigma2))()).sort((a, b) => a - b);
+  [...Array(n)]
+    .map(() => randomNormal(M, Math.sqrt(sigma2))())
+    .sort((a, b) => a - b);
 const round = val => Math.round(Number(val) * 1000) / 1000;
 
 const App = () => {
@@ -192,7 +200,18 @@ const App = () => {
     () =>
       dispatch({
         name: "sample",
-        value: [78.0, 95.5, 100.3, 100.6, 102.8, 107.8, 109.1, 110.8, 113.9, 125.0]
+        value: [
+          78.0,
+          95.5,
+          100.3,
+          100.6,
+          102.8,
+          107.8,
+          109.1,
+          110.8,
+          113.9,
+          125.0
+        ]
       }),
     []
   );
@@ -280,7 +299,7 @@ const App = () => {
                 component="h2"
                 align="center"
                 gutterBottom
-                style={{paddingTop: "1em"}}
+                style={{ paddingTop: "1em" }}
               >
                 FAQ
               </Typography>

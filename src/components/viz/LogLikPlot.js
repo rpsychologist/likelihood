@@ -1,17 +1,21 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useContext } from "react";
+import { useSpring, animated, interpolate } from "react-spring";
+import { useDrag } from "react-use-gesture";
 import { scaleLinear } from "d3-scale";
+import { VizDispatch } from "../../App";
 import { range } from "d3-array";
 import { axisBottom, axisLeft } from "d3-axis";
 import { select } from "d3-selection";
 import { format } from "d3-format";
 import { line } from "d3-shape";
 import { logLikSum } from "../utils";
-import { topTooltipPath, quadraticApprox } from "../utils";
+import { topTooltipPath, quadraticApprox, dMu } from "../utils";
+import AnimatedPath from "./AnimatedMuPath";
 import katex from "katex";
 
 const logLikCart = props => {
   const vizRef = useRef(null);
-
+  const dispatch = useContext(VizDispatch);
   // Stuff
   const margin = { top: 60, right: 20, bottom: 40, left: 50 };
   const durationTime = 200;
@@ -39,13 +43,34 @@ const logLikCart = props => {
   const newtonParabola = x_range.map(x1 => {
     return [x1, quadraticApprox(x1 - props.mu, 1, llTheta, deriv, -10/props.sigma2)]
   });
-  const y_min = -100;
-  const y_max = -20;
+  const yMin = -100;
+  const yMax = -20;
 
-  //const y_max = 0.05;
+
+  const [spring, set] = useSpring(() => ({
+    xy: [props.mu, props.sigma2],
+    immediate: false,
+    config: { duration: 500 }
+  }));
+
+  set({ xy: [props.mu, props.sigma2], immediate: !props.animating });
+
+  const bind = useDrag(({ movement: [mx, my], first, memo }) => {
+    const muStart = first ? props.mu : memo[0];
+    const sigma2Start = first ? props.sigma2 : memo[1];
+    const mu = xScale.invert(xScale(muStart) + mx);
+    const sigma2 = yScale.invert(yScale(sigma2Start) + my);
+    dispatch({
+      name: "contourDrag",
+      value: { mu: mu, sigma2: props.sigma2 }
+    });
+    return [muStart, sigma2Start];
+  });
+
+  //const yMax = 0.05;
   // Create scales
   const yScale = scaleLinear()
-    .domain([y_min, y_max])
+    .domain([yMin, yMax])
     .range([h, 0]);
 
   const xScale = scaleLinear()
@@ -76,8 +101,8 @@ const logLikCart = props => {
 
   // Tooltip
   const Tooltip = ({ theta, thetaLab, ll, deriv }) => {
-    const x = xScale(theta);
-    const y = yScale(ll);
+    const x = 0;
+    const y = 0;
     const width = 100;
     const path = topTooltipPath(width, 40, 10, 10);
     const thetaSymb = thetaLab == "mu" ? "mu" : "sigma^2";
@@ -193,34 +218,112 @@ const logLikCart = props => {
       <g ref={vizRef}>
         <g className="viz" >
           <g clipPath="url(#clipMu)">
-          <path d={linex(data1.data)} className="LogLikMu" />
-          <circle
+
+          <AnimatedPath
+              data={data1.data}
+              x={100}
+              sigma2={props.sigma2}
+              xScale={xScale}
+              yScale={yScale}
+              linex={linex}
+              mu={props.mu}
+              sample={sample}
+              animating={props.animating}
+              className="LogLikMu"
+            />
+                 <AnimatedPath
+              data={newtonParabola}
+              x={100}
+              sigma2={props.sigma2}
+              xScale={xScale}
+              yScale={yScale}
+              linex={linex}
+              mu={props.mu}
+              sample={sample}
+              animating={props.animating}
+              className="LogLikNewton" 
+            />
+          {/* <path d={linex(data1.data)} className="LogLikMu" /> */}
+{/*           <circle
             cx={xScale(props.theta)}
             cy={yScale(llTheta)}
             r="5"
             className="logLikX"
-          />
-          <line
+          /> */}
+    {/*       <line
             className="deriv"
             x1={xScale(props.theta - delta)}
             x2={xScale(props.theta + delta)}
             y1={yScale(llTheta - delta * deriv)}
             y2={yScale(llTheta + delta * deriv)}
-          />
-          <path d={linex(newtonParabola)} className="LogLikNewton" />
+          /> */}
+         {/*  <path d={linex(newtonParabola)} className="LogLikNewton" /> */}
           </g>
      
         </g>
       </g>
-      <Tooltip
+      <g clipPath="url(#clipMu2)">
+          <animated.g
+            {...bind()}
+            transform={spring.xy.interpolate(
+              (x, y) =>
+                `translate(${xScale(x)}, ${yScale(logLikSum(sample, x, y))})`
+            )}
+            className="draggable"
+          >
+            {/*                   <AnimatedCircle
+              x={props.mu}
+              funcX={(x, y) => logLikSum(sample, x, y)}
+              y={props.sigma2}
+              xScale={xScale}
+              yScale={yScale}
+              sample={sample}
+              count={props.count}
+              animating={props.animating}
+            /> */}
+
+            <circle
+              cx={margin.left}
+              cy={margin.top}
+              r="5"
+              className="logLikNewtonX--test"
+            />
+            <animated.line
+              className="deriv"
+              y1={spring.xy.interpolate(
+                (x, y) =>
+                  margin.top + yScale(yMax - delta * dMu(10, x, props.muHat, y))
+              )}
+              y2={spring.xy.interpolate(
+                (x, y) =>
+                  margin.top + yScale(yMax + delta * dMu(10, x, props.muHat, y))
+              )}
+              x1={ margin.left+  xScale(xMin - delta)}
+              x2={ margin.left+ xScale(xMin + delta)}
+            />
+
+            <Tooltip
+              theta={props.theta}
+              thetaLab={props.thetaLab}
+              ll={llTheta}
+              deriv={deriv}
+            />
+          </animated.g>
+        </g>
+
+
+  {/*     <Tooltip
         theta={props.theta}
         thetaLab={props.thetaLab}
         ll={llTheta}
         deriv={deriv}
-      />
+      /> */}
             <defs>
         <clipPath id="clipMu">
           <rect id="clip-rectMu" x="0" y="-10" width={w} height={h + 10} />
+        </clipPath>
+        <clipPath id="clipMu2">
+          <rect id="clip-rectMu" x={margin.left} y={-margin.bottom} width={w} height={h + 100} />
         </clipPath>
       </defs>
     </svg>
