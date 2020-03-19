@@ -85,28 +85,50 @@ export const quadraticApprox = (t, step, ll, gradient, hessian) => {
   return ll + gradient*(t/step) + 0.5 * hessian * Math.pow(t/step, 2);
 }
 
-export const newtonStep = (
-  y,
-  muPrev,
+export const newtonStep = ({sample,
+  mu,
   muHat,
-  sigma2Prev,
-  sigma2MLE
-) => {
+  sigma2,
+  sigma2Hat}) => {
+
   const step = 1;
-  const gradientMu = dMu(10, muPrev, muHat, sigma2Prev);
-  const hessianMu = 10 / sigma2Prev;
-  const gradientSigma2 = dSigma2(y, muPrev, sigma2Prev);
-  const hessianSigma2 = -10 / (2 * sigma2Prev * sigma2Prev);
-  const mu = muPrev + (step * gradientMu) / hessianMu;
-  const sigma2 = sigma2Prev + (step * gradientSigma2) / -hessianSigma2;
+  const gradientMu = dMu(10, mu, muHat, sigma2);
+  const hessianMu = 10 / sigma2;
+  const gradientSigma2 = dSigma2(sample, mu, sigma2);
+  const hessianSigma2 = -10 / (2 * sigma2 ** 2);
+  const muUpdate = mu + (step * gradientMu) / hessianMu;
+  const sigma2Update = sigma2 + (step * gradientSigma2) / -hessianSigma2;
   const points = {
-    mu: mu,
-    sigma2: sigma2
+    mu: muUpdate,
+    sigma2: sigma2Update
   };
   const TOOL = 0.0001;
-
-
   const convergence =
-    Math.abs(sigma2 - sigma2MLE) < TOOL && Math.abs(mu - muHat) < TOOL;
+    Math.abs(sigma2Update - sigma2Hat) < TOOL && Math.abs(muUpdate - muHat) < TOOL;
+  return { points: points, converged: convergence };
+};
+
+export const gradientStep = ({
+  sampleZ,
+  mu,
+  muHat,
+  sigma2,
+  sigma2Hat}) => {
+
+  const step = 0.01;
+  const sigmaHat = Math.sqrt(sigma2Hat);
+  const muPrev = (mu - muHat)/sigmaHat
+  const sigma2Prev = sigma2/sigma2Hat
+  const gradientMu = dMu(10, muPrev, 0, sigma2Prev);
+  const gradientSigma2 = dSigma2(sampleZ, muPrev, sigma2Prev);
+  const muUpdate = muPrev + (step * gradientMu)
+  const sigma2Update = sigma2Prev + (step * gradientSigma2)
+  const points = {
+    mu: muUpdate * sigmaHat + muHat,
+    sigma2: sigma2Update * sigma2Hat
+  };
+
+  const TOOL = 0.001;
+  const convergence = Math.abs(gradientSigma2) < TOOL && Math.abs(gradientMu) < TOOL
   return { points: points, converged: convergence };
 };

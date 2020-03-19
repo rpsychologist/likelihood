@@ -1,57 +1,57 @@
 import React, { useContext } from "react";
+import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { VizDispatch } from "../../App";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormHelperText from "@material-ui/core/FormHelperText";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
 import ReplayIcon from "@material-ui/icons/Replay";
+import InfoIcon from "@material-ui/icons/Info";
 import Tooltip from "@material-ui/core/Tooltip";
-import { useSpring, animated, interpolate } from 'react-spring'
-import { newtonStep } from "../utils";
+import { useSpring, animated, interpolate } from "react-spring";
 
+const useStyles = makeStyles(theme => ({
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2)
+  }
+}));
 
-const GradientAscent = ({ count, converged, mu, muHat, sigma2, sigma2Hat, sample }) => {
+const Controls = ({ algo, converged, count, sample, mu, muHat, sigma2, sigma2Hat }) => {
   const dispatch = useContext(VizDispatch);
-  const iterate = (sample, mu, muHat, sigma2) => {
 
-    const next = newtonStep(sample, mu, muHat, sigma2, sigma2Hat);
+  const iterate = () => {
+
     dispatch({
-      name: "gradientAscent",
+      name: "algoIterate",
       value: {
         increment: 1,
-        update: next
       }
-    })
-  }
+    });
+  };
   const decrement = () => {
     dispatch({
-      name: "gradientAscentDecrement",
-      value: {
-      }
-    })
-  }
+      name: "algoReverse",
+      value: {}
+    });
+  };
+
+
   return (
-    <div>
-      <Typography variant="body1">
-        For more challenging models, we often need to use some{" "}
-        <b>optimization algorithm</b>. Basically, we let the computer
-        iteratively climb towards the top of the hill. The simplest algorithm is
-        probably{" "}
-        <a href="https://en.wikipedia.org/wiki/Gradient_descent">
-          gradient ascent
-        </a>{" "}
-        (or descent if we look for the minima). You can use the controls below
-        to see how a gradient ascent algorithm finds it's way to the maximum
-        likelihood estimate.
-      </Typography>
-      <Typography display="inline" variant="body2">
-        Gradient ascent
-      </Typography>
+    <>
       <Tooltip title={converged ? "" : "Run until convergence"}>
         <IconButton
           onClick={() =>
             dispatch({
-              name: "runGradientAscent",
+              name: "algoRun",
               value: { delay: 1000 }
             })
           }
@@ -63,7 +63,7 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sigma2Hat, sample
       </Tooltip>
       <Tooltip title={converged ? "" : "1 iteration"}>
         <IconButton
-          onClick={() => iterate(sample, mu, muHat, sigma2)}
+          onClick={() => iterate()}
           aria-label="iterate 1 gradient ascent"
           disabled={converged}
         >
@@ -79,25 +79,27 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sigma2Hat, sample
           -1
         </IconButton>
       </Tooltip>
-      <Tooltip title={converged ? "" : "10 iterations"}>
-        <IconButton
-          onClick={() =>
-            dispatch({
-              name: "gradientAscent",
-              value: { increment: 10 }
-            })
-          }
-          aria-label="iterate 10 gradient ascent"
-          disabled={converged}
-        >
-          +10
-        </IconButton>
-      </Tooltip>
+      {algo == "gradientAscent" && (
+        <Tooltip title={converged ? "" : "10 iterations"}>
+          <IconButton
+            onClick={() =>
+              dispatch({
+                name: "algoIterate",
+                value: { increment: 10 }
+              })
+            }
+            aria-label="iterate 10 gradient ascent"
+            disabled={converged}
+          >
+            +10
+          </IconButton>
+        </Tooltip>
+      )}
       <Tooltip title={!converged ? "" : "Reset"}>
         <IconButton
           onClick={() =>
             dispatch({
-              name: "resetGradientAscent",
+              name: "algoReset",
               value: null
             })
           }
@@ -107,9 +109,58 @@ const GradientAscent = ({ count, converged, mu, muHat, sigma2, sigma2Hat, sample
           <ReplayIcon />
         </IconButton>
       </Tooltip>
+      <Tooltip title={"More information"}>
+        <IconButton aria-label="more-information">
+          <InfoIcon />
+        </IconButton>
+      </Tooltip>
       <Typography display="inline" variant="body2">
         Iterations: {count} {converged && "(converged)"}
       </Typography>
+    </>
+  );
+};
+
+const GradientAscent = props => {
+  const dispatch = useContext(VizDispatch);
+  const { algo } = props;
+  const classes = useStyles();
+  const handleChange = event => {
+    dispatch({ name: "algo", value: event.target.value });
+  };
+  return (
+    <div>
+      <Typography variant="body1">
+        For more challenging models, we often need to use some{" "}
+        <b>optimization algorithm</b>. Basically, we let the computer
+        iteratively climb towards the top of the hill. The simplest algorithm is
+        probably{" "}
+        <a href="https://en.wikipedia.org/wiki/Gradient_descent">
+          gradient ascent
+        </a>{" "}
+        (or descent if we look for the minima). You can use the controls below
+        to see how a gradient ascent algorithm finds it's way to the maximum
+        likelihood estimate.
+      </Typography>
+      <FormControl variant="filled" className={classes.formControl}>
+        <InputLabel id="demo-simple-select-filled-label">Algorithm</InputLabel>
+        <Select
+          labelId="demo-simple-select-filled-label"
+          id="demo-simple-select-filled"
+          value={algo}
+          onChange={handleChange}
+        >
+          <MenuItem value="none">
+            <em>None</em>
+          </MenuItem>
+          <MenuItem value={"gradientAscent"}>Gradient ascent</MenuItem>
+          <MenuItem value={"newtonRaphson"}>Newton-Raphson</MenuItem>
+        </Select>
+      </FormControl>
+      { algo != "none" &&
+      <Controls {...props} />
+      }
+
     </div>
   );
 };

@@ -52,7 +52,6 @@ const ContourChart = props => {
   const dispatch = useContext(VizDispatch);
   // Stuff
   const margin = { top: 0, right: 20, bottom: 40, left: 50 };
-  const durationTime = 200;
   const w = props.width - margin.left - margin.right;
   const h = props.width * 0.75 - margin.top - margin.bottom;
   const sample = props.sample;
@@ -82,20 +81,19 @@ const ContourChart = props => {
     return [muStart, sigma2Start];
   });
 
-  const iterate = ({sample, mu, muHat, sigma2, sigma2Hat}) => {
-    const next = newtonStep(sample, mu, muHat, sigma2, sigma2Hat);
+  const iterate = () => {
     dispatch({
-      name: "gradientAscent",
+      name: "algoIterate",
       value: {
         increment: 1,
-        update: next
       }
     });
   };
 
+  console.log("delay " + props.algoDelay)
   useInterval(() => {
-    iterate({...props});
-  }, props.gradientDelay);
+    iterate();
+  }, props.algoDelay);
 
   set({ xy: [props.mu, props.sigma2], immediate: !props.animating });
 

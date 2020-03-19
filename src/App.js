@@ -17,7 +17,7 @@ import Content from "./Viz";
 import SEO from "./components/SEO";
 import Footer from "./components/content/Footer";
 import { randomNormal } from "d3-random";
-import { calcMean, calcSS } from "./components/utils";
+import { calcMean, calcSS, newtonStep, gradientStep } from "./components/utils";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -53,12 +53,15 @@ const initialState = {
   n: 10,
   test: "LRT",
   sample: [1, 2],
+  sampleZ: [],
   sliderMax: 150,
   sliderStep: 0.1,
   drawGradientPath: [],
-  gradientDelay: null,
+  algoDelay: null,
+  algoDelaySetting: null,
   animating: false,
-  count: 0
+  count: 0,
+  algo: "gradientAscent"
 };
 
 const vizReducer = (state, action) => {
@@ -74,6 +77,12 @@ const vizReducer = (state, action) => {
         animating: false
       };
     }
+    case "algo": {
+      return {
+        ...state,
+        [name]: value
+      };
+    }
     case "contourDrag": {
       return {
         ...state,
@@ -82,33 +91,35 @@ const vizReducer = (state, action) => {
         animating: false
       };
     }
-    case "gradientAscent": {
+    case "algoIterate": {
       const newCount = state.count + value.increment;
       const count = newCount;
-      const update = value.update.points;
+      const update = state.algo == "gradientAscent" ? gradientStep(state) : newtonStep(state);
       const newPath =
         state.count == 0
-          ? [{ mu: state.mu, sigma2: state.sigma2 }, update]
-          : [...state.drawGradientPath, update];
-      const convergedCurrent = value.update.converged;
+          ? [{ mu: state.mu, sigma2: state.sigma2 }, update.points]
+          : [...state.drawGradientPath, update.points];
+      const convergedCurrent = update.converged;
+      console.log("conv " + convergedCurrent);
       const convergedHistory =
         state.count == 0
           ? [false]
           : [...state.convergedHistory, convergedCurrent];
+      //const animate = state.algo == "newtonRaphson";
       return {
         ...state,
-        mu: update.mu,
-        sigma2: update.sigma2,
+        mu: update.points.mu,
+        sigma2: update.points.sigma2,
         drawGradientPath: newPath,
         count: count,
         convergedHistory: convergedHistory,
         converged: convergedCurrent,
-        animating: true,
-        gradientDelay: convergedCurrent ? null : state.gradientDelaySetting,
-        gradientDelaySetting: convergedCurrent ? null : state.gradientDelaySetting
+        animating: state.algo == "newtonRaphson",
+        algoDelay: convergedCurrent ? null : state.algoDelaySetting,
+        algoDelaySetting: convergedCurrent ? null : state.algoDelaySetting
       };
     }
-    case "gradientAscentDecrement": {
+    case "algoReverse": {
       const newPath = state.drawGradientPath;
       newPath.pop();
       const prev = newPath[newPath.length - 1];
@@ -123,17 +134,17 @@ const vizReducer = (state, action) => {
         count: state.count - 1,
         convergedHistory: convergedHistory,
         converged: convergedCurrent,
-        animating: true
+        animating: state.algo == "newtonRaphson",
       };
     }
-    case "runGradientAscent": {
+    case "algoRun": {
       return {
         ...state,
-        gradientDelay: 0,
-        gradientDelaySetting: value.delay
+        algoDelay: 0,
+        algoDelaySetting: state.algo == "gradientAscent" ? 1 : value.delay
       };
     }
-    case "resetGradientAscent": {
+    case "algoReset": {
       const path = state.drawGradientPath[0];
       return {
         ...state,
@@ -141,19 +152,19 @@ const vizReducer = (state, action) => {
         mu: path.mu,
         sigma2: path.sigma2,
         drawGradientPath: path,
-        gradientDelay: null,
-        gradientDelaySetting: null,
+        algoDelay: null,
+        algoDelaySetting: null,
         converged: false,
         animating: false
       };
     }
-    case "newSampleGradientAscent": {
+    case "algoNewSample": {
       return {
         ...state,
         drawGradientPath: [value.gradientPath.points[0]],
         gradientPath: value.gradientPath.points,
         maxIter: value.gradientPath.length - 1,
-        count: -1,
+        count: 0,
         converged: false
       };
     }
@@ -167,6 +178,7 @@ const vizReducer = (state, action) => {
       return {
         ...state,
         sample: value,
+        sampleZ:  value.map(y => (y - muHat) / Math.sqrt(sigma2Hat)),
         muHat: muHat,
         sigma2Hat: sigma2Hat,
         sigma2MleNull: sigma2Null,
