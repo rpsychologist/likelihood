@@ -270,36 +270,45 @@ const OverlapChart = props => {
             />
           </g>
         </g>
+        <g clipPath="url(#clipSigma2)">
+          <animated.g
+            {...bind()}
+            transform={spring.xy.interpolate(
+              (x, y) =>
+                `translate(${xScale(logLikSum(sample, x, y))}, ${yScale(y)})`
+            )}
+            className="draggable"
+          >
+            <animated.line
+              className="deriv"
+              x1={spring.xy.interpolate(
+                (x, y) =>
+                  margin.left + xScale(xMin - delta * dSigma2(sample, x, y))
+              )}
+              x2={spring.xy.interpolate(
+                (x, y) =>
+                  margin.left + xScale(xMin + delta * dSigma2(sample, x, y))
+              )}
+              y1={yScale(yMax - delta)}
+              y2={yScale(yMax + delta)}
+            />
+
+            <Tooltip
+              theta={props.theta}
+              thetaLab={props.thetaLab}
+              ll={llTheta}
+              deriv={deriv}
+            />
+          </animated.g>
+        </g>
       </g>
-      <animated.g
-        {...bind()}
-        transform={spring.xy.interpolate(
-          (x, y) =>
-            `translate(${xScale(logLikSum(sample, x, y))}, ${yScale(y)})`
-        )}
-        className="draggable"
-      >
-        <animated.line
-          className="deriv"
-          x1={spring.xy.interpolate(
-            (x, y) => margin.left + xScale(xMin - delta * dSigma2(sample, x, y))
-          )}
-          x2={spring.xy.interpolate(
-            (x, y) => margin.left + xScale(xMin + delta * dSigma2(sample, x, y))
-          )}
-          y1={yScale(yMax - delta)}
-          y2={yScale(yMax + delta)}
-        />
-        <Tooltip
-          theta={props.theta}
-          thetaLab={props.thetaLab}
-          ll={llTheta}
-          deriv={deriv}
-        />
-      </animated.g>
+
       <defs>
         <clipPath id="clipSigma">
           <rect id="clip-rect2" x="0" y="-10" width={w} height={h + 10} />
+        </clipPath>
+        <clipPath id="clipSigma2">
+          <rect id="clip-rect2" x={margin.left} y={-10} width={w + 100} height={h + 10} />
         </clipPath>
         <clipPath id="clipQuadApprox">
           <rect id="clip-rect2" x="0" y="-10" width={h + 100} height={h + 10} />
