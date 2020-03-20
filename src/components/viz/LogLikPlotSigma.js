@@ -8,7 +8,7 @@ import { select } from "d3-selection";
 import { format } from "d3-format";
 import { line } from "d3-shape";
 import { logLikSum } from "../utils";
-import { topTooltipPath, quadraticApprox, dSigma2 } from "../utils";
+import { topTooltipPath, quadraticApprox, dSigma2, gradientStep } from "../utils";
 import AnimatedCircle from "./AnimatedCircle";
 import AnimatedPath from "./AnimatedPath";
 import NewtonParabola from "./NewtonParabola";
@@ -93,6 +93,9 @@ const OverlapChart = props => {
   useEffect(() => {
     createChart(durationTime);
   }, [props.mu, props.sigma2, w, props.sample]);
+
+  const gradientNext = gradientStep(props);
+  const gradientNextLL = logLikSum(sample, props.mu, gradientNext.points.sigma2 )
 
   // Tooltip
   const Tooltip = ({ theta, thetaLab, ll, deriv }) => {
@@ -252,20 +255,36 @@ const OverlapChart = props => {
               count={props.count}
               animating={props.animating}
             /> */}
-            <NewtonParabola
-              mu={props.mu}
-              sigma2={props.sigma2}
-              yMin={yMin}
-              yMax={yMax}
-              xMin={xMin}
-              xScale={xScale}
-              yScale={yScale}
-              linex={linex}
-              llTheta={llTheta}
-              deriv={deriv}
-              hessian={hessian}
-              count={props.count}
+            {props.algo == "newtonRaphson" &&
+                        <NewtonParabola
+                        mu={props.mu}
+                        sigma2={props.sigma2}
+                        yMin={yMin}
+                        yMax={yMax}
+                        xMin={xMin}
+                        xScale={xScale}
+                        yScale={yScale}
+                        linex={linex}
+                        llTheta={llTheta}
+                        deriv={deriv}
+                        hessian={hessian}
+                        count={props.count}
+                      />
+            }
+            <circle 
+                    cy={yScale(gradientNext.points.sigma2)}
+                    cx={xScale(gradientNextLL)}
+                    r="5"
+                    className="logLikNewtonX--approx"   
             />
+            <line 
+                      className="LogLikNewton--maxima"
+                      x1={xScale(xMin)}
+                      x2={xScale(gradientNextLL)}
+                      y1={yScale(gradientNext.points.sigma2)}
+                      y2={yScale(gradientNext.points.sigma2)}
+            />
+
           </g>
         </g>
         <g clipPath="url(#clipSigma2)">

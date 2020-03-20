@@ -100,7 +100,6 @@ const vizReducer = (state, action) => {
           ? [{ mu: state.mu, sigma2: state.sigma2 }, update.points]
           : [...state.drawGradientPath, update.points];
       const convergedCurrent = update.converged;
-      console.log("conv " + convergedCurrent);
       const convergedHistory =
         state.count == 0
           ? [false]

@@ -9,7 +9,7 @@ import { select } from "d3-selection";
 import { format } from "d3-format";
 import { line } from "d3-shape";
 import { logLikSum } from "../utils";
-import { topTooltipPath, quadraticApprox, dMu } from "../utils";
+import { topTooltipPath, quadraticApprox, dMu, gradientStep } from "../utils";
 import AnimatedPath from "./AnimatedMuPath";
 import katex from "katex";
 
@@ -98,6 +98,10 @@ const logLikCart = props => {
   useEffect(() => {
     createChart(durationTime);
   }, [props.mu, props.sigma2, w, props.sample]);
+
+  
+  const gradientNext = gradientStep(props);
+  const gradientNextLL = logLikSum(sample, gradientNext.points.mu, props.sigma2 )
 
   // Tooltip
   const Tooltip = ({ theta, thetaLab, ll, deriv }) => {
@@ -258,6 +262,20 @@ const logLikCart = props => {
             y2={yScale(llTheta + delta * deriv)}
           /> */}
          {/*  <path d={linex(newtonParabola)} className="LogLikNewton" /> */}
+
+         <circle 
+                    cx={xScale(gradientNext.points.mu)}
+                    cy={yScale(gradientNextLL)}
+                    r="5"
+                    className="logLikNewtonX--approx"   
+            />
+            <line 
+                      className="LogLikNewton--maxima"
+                      y1={yScale(yMin)}
+                      y2={yScale(gradientNextLL)}
+                      x1={xScale(gradientNext.points.mu)}
+                      x2={xScale(gradientNext.points.mu)}
+            />
           </g>
      
         </g>

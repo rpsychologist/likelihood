@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import Grid from '@material-ui/core/Grid';
 import Typography from "@material-ui/core/Typography";
 import { VizDispatch } from "../../App";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -79,7 +80,7 @@ const Controls = ({ algo, converged, count, sample, mu, muHat, sigma2, sigma2Hat
           -1
         </IconButton>
       </Tooltip>
-      {algo == "gradientAscent" && (
+{/*       {algo == "gradientAscent" && (
         <Tooltip title={converged ? "" : "10 iterations"}>
           <IconButton
             onClick={() =>
@@ -94,7 +95,7 @@ const Controls = ({ algo, converged, count, sample, mu, muHat, sigma2, sigma2Hat
             +10
           </IconButton>
         </Tooltip>
-      )}
+      )} */}
       <Tooltip title={!converged ? "" : "Reset"}>
         <IconButton
           onClick={() =>
@@ -142,7 +143,10 @@ const GradientAscent = props => {
         to see how a gradient ascent algorithm finds it's way to the maximum
         likelihood estimate.
       </Typography>
-      <FormControl variant="filled" className={classes.formControl}>
+      <Grid>
+
+
+      <FormControl className={classes.formControl}>
         <InputLabel id="demo-simple-select-filled-label">Algorithm</InputLabel>
         <Select
           labelId="demo-simple-select-filled-label"
@@ -160,7 +164,7 @@ const GradientAscent = props => {
       { algo != "none" &&
       <Controls {...props} />
       }
-
+      </Grid>
     </div>
   );
 };
