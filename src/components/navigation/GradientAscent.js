@@ -1,7 +1,11 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
+import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { VizDispatch } from "../../App";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -19,6 +23,7 @@ import { useSpring, animated, interpolate } from "react-spring";
 const useStyles = makeStyles(theme => ({
   formControl: {
     margin: theme.spacing(1),
+    marginLeft: 0,
     minWidth: 120
   },
   selectEmpty: {
@@ -26,15 +31,24 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Controls = ({ algo, converged, count, sample, mu, muHat, sigma2, sigma2Hat }) => {
+const Controls = ({
+  algo,
+  converged,
+  count,
+  sample,
+  mu,
+  muHat,
+  sigma2,
+  sigma2Hat,
+  toggle
+}) => {
   const dispatch = useContext(VizDispatch);
 
   const iterate = () => {
-
     dispatch({
       name: "algoIterate",
       value: {
-        increment: 1,
+        increment: 1
       }
     });
   };
@@ -44,7 +58,6 @@ const Controls = ({ algo, converged, count, sample, mu, muHat, sigma2, sigma2Hat
       value: {}
     });
   };
-
 
   return (
     <>
@@ -80,7 +93,7 @@ const Controls = ({ algo, converged, count, sample, mu, muHat, sigma2, sigma2Hat
           -1
         </IconButton>
       </Tooltip>
-{/*       {algo == "gradientAscent" && (
+      {/*       {algo == "gradientAscent" && (
         <Tooltip title={converged ? "" : "10 iterations"}>
           <IconButton
             onClick={() =>
@@ -110,24 +123,23 @@ const Controls = ({ algo, converged, count, sample, mu, muHat, sigma2, sigma2Hat
           <ReplayIcon />
         </IconButton>
       </Tooltip>
-      <Tooltip title={"More information"}>
-        <IconButton aria-label="more-information">
-          <InfoIcon />
-        </IconButton>
-      </Tooltip>
-      <Typography display="inline" variant="body2">
-        Iterations: {count} {converged && "(converged)"}
-      </Typography>
     </>
   );
 };
 
 const GradientAscent = props => {
   const dispatch = useContext(VizDispatch);
-  const { algo } = props;
+  const { algo, count, converged } = props;
   const classes = useStyles();
   const handleChange = event => {
     dispatch({ name: "algo", value: event.target.value });
+  };
+  const [expanded, setExpanded] = useState('panel1');
+
+  console.log(expanded)
+  const handleChange2 = panel => (event, newExpanded) => {
+    console.log("toggle");
+    setExpanded(newExpanded ? panel : false);
   };
   return (
     <div>
@@ -143,28 +155,62 @@ const GradientAscent = props => {
         to see how a gradient ascent algorithm finds it's way to the maximum
         likelihood estimate.
       </Typography>
-      <Grid>
-
-
-      <FormControl className={classes.formControl}>
-        <InputLabel id="demo-simple-select-filled-label">Algorithm</InputLabel>
-        <Select
-          labelId="demo-simple-select-filled-label"
-          id="demo-simple-select-filled"
-          value={algo}
-          onChange={handleChange}
-        >
-          <MenuItem value="none">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={"gradientAscent"}>Gradient ascent</MenuItem>
-          <MenuItem value={"newtonRaphson"}>Newton-Raphson</MenuItem>
-        </Select>
-      </FormControl>
-      { algo != "none" &&
-      <Controls {...props} />
+      <Grid
+        container
+        direction="row"
+        justify="flex-start"
+        alignItems="flex-end"
+      >
+        <FormControl className={classes.formControl}>
+          <InputLabel id="demo-simple-select-filled-label">
+            Algorithm
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-filled-label"
+            id="demo-simple-select-filled"
+            value={algo}
+            onChange={handleChange}
+          >
+            <MenuItem value="none">
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value={"gradientAscent"}>Gradient ascent</MenuItem>
+            <MenuItem value={"newtonRaphson"}>Newton-Raphson</MenuItem>
+          </Select>
+        </FormControl>
+        {algo != "none" && (
+          <>
+            <Controls {...props} toggle={handleChange2} />
+                <Tooltip title={"More information"}>
+        <IconButton 
+        onClick={handleChange2('panel1')}
+        aria-label="more-information">
+          <InfoIcon />
+        </IconButton>
+      </Tooltip>
+          </>
+        )
       }
       </Grid>
+      {algo != "none" && (
+        <Typography component="p" variant="body2">
+          Iterations: {count} {converged && "(converged)"}
+        </Typography>
+      )}
+            <ExpansionPanel expanded={expanded === 'panel1'}  onChange={handleChange2('panel1')}>
+        <ExpansionPanelSummary
+          aria-controls="panel1a-content"
+          id="panel1a-header"
+        >
+          <Typography className={classes.heading}>Expansion Panel 1</Typography>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails>
+          <Typography>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
+            sit amet blandit leo lobortis eget.
+          </Typography>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
     </div>
   );
 };

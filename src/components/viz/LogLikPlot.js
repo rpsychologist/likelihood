@@ -30,22 +30,34 @@ const logLikCart = props => {
   if (props.thetaLab == "mu") {
     xMax = props.muTheta + sigmaTheta * 5;
     xMin = props.muTheta - sigmaTheta * 5;
-    llTheta = useMemo(() => logLikSum(sample, props.mu, props.sigma2), [props.mu, props.sigma2, props.sample]);
+    llTheta = useMemo(() => logLikSum(sample, props.mu, props.sigma2), [
+      props.mu,
+      props.sigma2,
+      props.sample
+    ]);
   } else if (props.thetaLab == "sigma") {
     const sigma2MLE = props.sigma2Theta;
     xMax = sigma2MLE + sigma2MLE * 2;
     xMin = sigma2MLE - sigma2MLE * 5;
     xMin = xMin < 0 ? 0.1 : xMin;
-    llTheta = useMemo(() => logLikSum(sample, props.mu, props.sigma2, [props.mu, props.sigma2, props.sample]));
+    llTheta = useMemo(() =>
+      logLikSum(sample, props.mu, props.sigma2, [
+        props.mu,
+        props.sigma2,
+        props.sample
+      ])
+    );
   }
 
   const x_range = range(xMin, xMax, Math.abs(xMax - xMin) / 50);
   const newtonParabola = x_range.map(x1 => {
-    return [x1, quadraticApprox(x1 - props.mu, 1, llTheta, deriv, -10/props.sigma2)]
+    return [
+      x1,
+      quadraticApprox(x1 - props.mu, 1, llTheta, deriv, -10 / props.sigma2)
+    ];
   });
   const yMin = -100;
   const yMax = -20;
-
 
   const [spring, set] = useSpring(() => ({
     xy: [props.mu, props.sigma2],
@@ -81,7 +93,6 @@ const logLikCart = props => {
   const xAxis = axisBottom(xScale);
   const yAxis = axisLeft(yScale).ticks(4);
 
-
   // Line function
   const linex = line()
     .x(d => xScale(d[0]))
@@ -89,9 +100,9 @@ const logLikCart = props => {
 
   // Resize
   //useEffect(() => {
-    // const t = zoomTransform(vizRef.current);
-    // const newXScale = t.rescaleX(xScale.range([0, w]));
-    // setXAxis(() => axisBottom(newXScale));
+  // const t = zoomTransform(vizRef.current);
+  // const newXScale = t.rescaleX(xScale.range([0, w]));
+  // setXAxis(() => axisBottom(newXScale));
   //}, [w]);
 
   // Update
@@ -99,9 +110,12 @@ const logLikCart = props => {
     createChart(durationTime);
   }, [props.mu, props.sigma2, w, props.sample]);
 
-  
   const gradientNext = gradientStep(props);
-  const gradientNextLL = logLikSum(sample, gradientNext.points.mu, props.sigma2 )
+  const gradientNextLL = logLikSum(
+    sample,
+    gradientNext.points.mu,
+    props.sigma2
+  );
 
   // Tooltip
   const Tooltip = ({ theta, thetaLab, ll, deriv }) => {
@@ -197,7 +211,7 @@ const logLikCart = props => {
         "transform",
         "translate(" + w / 2 + " ," + (h + margin.bottom - 5) + ")"
       )
-      .text(props.thetaLab == "mu" ? "μ":"σ²");
+      .text(props.thetaLab == "mu" ? "μ" : "σ²");
 
     // y label
     gViz
@@ -220,10 +234,9 @@ const logLikCart = props => {
   return (
     <svg width={props.width} height={props.width * 0.4}>
       <g ref={vizRef}>
-        <g className="viz" >
+        <g className="viz">
           <g clipPath="url(#clipMu)">
-
-          <AnimatedPath
+            <AnimatedPath
               data={data1.data}
               x={100}
               sigma2={props.sigma2}
@@ -235,61 +248,66 @@ const logLikCart = props => {
               animating={props.animating}
               className="LogLikMu"
             />
-                 <AnimatedPath
-              data={newtonParabola}
-              x={100}
-              sigma2={props.sigma2}
-              xScale={xScale}
-              yScale={yScale}
-              linex={linex}
-              mu={props.mu}
-              sample={sample}
-              animating={props.animating}
-              className="LogLikNewton" 
-            />
-          {/* <path d={linex(data1.data)} className="LogLikMu" /> */}
-{/*           <circle
+            {props.algo == "newtonRaphson" && (
+              <AnimatedPath
+                data={newtonParabola}
+                x={100}
+                sigma2={props.sigma2}
+                xScale={xScale}
+                yScale={yScale}
+                linex={linex}
+                mu={props.mu}
+                sample={sample}
+                animating={props.animating}
+                className="LogLikNewton"
+              />
+            )}
+            {/* <path d={linex(data1.data)} className="LogLikMu" /> */}
+            {/*           <circle
             cx={xScale(props.theta)}
             cy={yScale(llTheta)}
             r="5"
             className="logLikX"
           /> */}
-    {/*       <line
+            {/*       <line
             className="deriv"
             x1={xScale(props.theta - delta)}
             x2={xScale(props.theta + delta)}
             y1={yScale(llTheta - delta * deriv)}
             y2={yScale(llTheta + delta * deriv)}
           /> */}
-         {/*  <path d={linex(newtonParabola)} className="LogLikNewton" /> */}
+            {/*  <path d={linex(newtonParabola)} className="LogLikNewton" /> */}
 
-         <circle 
-                    cx={xScale(gradientNext.points.mu)}
-                    cy={yScale(gradientNextLL)}
-                    r="5"
-                    className="logLikNewtonX--approx"   
-            />
-            <line 
-                      className="LogLikNewton--maxima"
-                      y1={yScale(yMin)}
-                      y2={yScale(gradientNextLL)}
-                      x1={xScale(gradientNext.points.mu)}
-                      x2={xScale(gradientNext.points.mu)}
-            />
+            {props.algo == "gradientAscent" && (
+              <>
+                <circle
+                  cx={xScale(gradientNext.points.mu)}
+                  cy={yScale(gradientNextLL)}
+                  r="5"
+                  className="logLikNewtonX--approx"
+                />
+                <line
+                  className="LogLikNewton--maxima"
+                  y1={yScale(yMin)}
+                  y2={yScale(gradientNextLL)}
+                  x1={xScale(gradientNext.points.mu)}
+                  x2={xScale(gradientNext.points.mu)}
+                />
+              </>
+            )}
           </g>
-     
         </g>
       </g>
       <g clipPath="url(#clipMu2)">
-          <animated.g
-            {...bind()}
-            transform={spring.xy.interpolate(
-              (x, y) =>
-                `translate(${xScale(x)}, ${yScale(logLikSum(sample, x, y))})`
-            )}
-            className="draggable"
-          >
-            {/*                   <AnimatedCircle
+        <animated.g
+          {...bind()}
+          transform={spring.xy.interpolate(
+            (x, y) =>
+              `translate(${xScale(x)}, ${yScale(logLikSum(sample, x, y))})`
+          )}
+          className="draggable"
+        >
+          {/*                   <AnimatedCircle
               x={props.mu}
               funcX={(x, y) => logLikSum(sample, x, y)}
               y={props.sigma2}
@@ -300,48 +318,53 @@ const logLikCart = props => {
               animating={props.animating}
             /> */}
 
-            <circle
-              cx={margin.left}
-              cy={margin.top}
-              r="5"
-              className="logLikNewtonX--test"
-            />
-            <animated.line
-              className="deriv"
-              y1={spring.xy.interpolate(
-                (x, y) =>
-                  margin.top + yScale(yMax - delta * dMu(10, x, props.muHat, y))
-              )}
-              y2={spring.xy.interpolate(
-                (x, y) =>
-                  margin.top + yScale(yMax + delta * dMu(10, x, props.muHat, y))
-              )}
-              x1={ margin.left+  xScale(xMin - delta)}
-              x2={ margin.left+ xScale(xMin + delta)}
-            />
+          <circle
+            cx={margin.left}
+            cy={margin.top}
+            r="5"
+            className="logLikNewtonX--test"
+          />
+          <animated.line
+            className="deriv"
+            y1={spring.xy.interpolate(
+              (x, y) =>
+                margin.top + yScale(yMax - delta * dMu(10, x, props.muHat, y))
+            )}
+            y2={spring.xy.interpolate(
+              (x, y) =>
+                margin.top + yScale(yMax + delta * dMu(10, x, props.muHat, y))
+            )}
+            x1={margin.left + xScale(xMin - delta)}
+            x2={margin.left + xScale(xMin + delta)}
+          />
 
-            <Tooltip
-              theta={props.theta}
-              thetaLab={props.thetaLab}
-              ll={llTheta}
-              deriv={deriv}
-            />
-          </animated.g>
-        </g>
+          <Tooltip
+            theta={props.theta}
+            thetaLab={props.thetaLab}
+            ll={llTheta}
+            deriv={deriv}
+          />
+        </animated.g>
+      </g>
 
-
-  {/*     <Tooltip
+      {/*     <Tooltip
         theta={props.theta}
         thetaLab={props.thetaLab}
         ll={llTheta}
         deriv={deriv}
       /> */}
-            <defs>
+      <defs>
         <clipPath id="clipMu">
           <rect id="clip-rectMu" x="0" y="-10" width={w} height={h + 10} />
         </clipPath>
         <clipPath id="clipMu2">
-          <rect id="clip-rectMu" x={margin.left} y={-margin.bottom} width={w} height={h + 100} />
+          <rect
+            id="clip-rectMu"
+            x={margin.left}
+            y={-margin.bottom}
+            width={w}
+            height={h + 100}
+          />
         </clipPath>
       </defs>
     </svg>
