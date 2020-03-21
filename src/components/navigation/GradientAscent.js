@@ -1,11 +1,12 @@
 import React, { useContext, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
+import Collapse from "@material-ui/core/Collapse";
 import Typography from "@material-ui/core/Typography";
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { VizDispatch } from "../../App";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -134,12 +135,12 @@ const GradientAscent = props => {
   const handleChange = event => {
     dispatch({ name: "algo", value: event.target.value });
   };
-  const [expanded, setExpanded] = useState('panel1');
+  const [expanded, setExpanded] = useState(false);
 
-  console.log(expanded)
-  const handleChange2 = panel => (event, newExpanded) => {
+  console.log(expanded);
+  const handleChange2 = () => {
     console.log("toggle");
-    setExpanded(newExpanded ? panel : false);
+    setExpanded(val => !val);
   };
   return (
     <div>
@@ -155,6 +156,28 @@ const GradientAscent = props => {
         to see how a gradient ascent algorithm finds it's way to the maximum
         likelihood estimate.
       </Typography>
+      {props.algo != "none" && 
+            <Collapse in={expanded} timeout="auto" unmountOnExit>
+            <ExpansionPanel expanded={expanded} onChange={handleChange2}>
+              <ExpansionPanelSummary
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+              >
+                <Typography className={classes.heading}>
+                  {props.algo}
+                </Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails>
+                <Typography>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
+                  eget.
+                </Typography>
+              </ExpansionPanelDetails>
+            </ExpansionPanel>
+          </Collapse>
+      }
+
       <Grid
         container
         direction="row"
@@ -181,36 +204,20 @@ const GradientAscent = props => {
         {algo != "none" && (
           <>
             <Controls {...props} toggle={handleChange2} />
-                <Tooltip title={"More information"}>
-        <IconButton 
-        onClick={handleChange2('panel1')}
-        aria-label="more-information">
-          <InfoIcon />
-        </IconButton>
-      </Tooltip>
+            <Tooltip title={"More information"}>
+              <IconButton onClick={handleChange2} aria-label="more-information">
+                <InfoIcon />
+              </IconButton>
+            </Tooltip>
           </>
-        )
-      }
+        )}
       </Grid>
       {algo != "none" && (
         <Typography component="p" variant="body2">
           Iterations: {count} {converged && "(converged)"}
         </Typography>
       )}
-            <ExpansionPanel expanded={expanded === 'panel1'}  onChange={handleChange2('panel1')}>
-        <ExpansionPanelSummary
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography className={classes.heading}>Expansion Panel 1</Typography>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
-          <Typography>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-            sit amet blandit leo lobortis eget.
-          </Typography>
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
+
     </div>
   );
 };
