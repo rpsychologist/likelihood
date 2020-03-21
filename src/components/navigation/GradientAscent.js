@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
+import Paper from "@material-ui/core/Paper";
 import Collapse from "@material-ui/core/Collapse";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
@@ -20,6 +21,7 @@ import ReplayIcon from "@material-ui/icons/Replay";
 import InfoIcon from "@material-ui/icons/Info";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSpring, animated, interpolate } from "react-spring";
+import katex from "katex";
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -139,9 +141,32 @@ const GradientAscent = props => {
 
   console.log(expanded);
   const handleChange2 = () => {
-    console.log("toggle");
     setExpanded(val => !val);
   };
+  const eqGrad = katex.renderToString(
+    `
+    \\begin{aligned}
+    \\mu_{n+1} &= \\mu_n + \\gamma \\frac{\\partial}{\\partial \\mu_n}\\ell \\\\
+    \\sigma^2_{n+1} &= \\sigma^2_n + \\gamma \\frac{\\partial}{\\partial \\sigma^2_n}\\ell 
+    \\end{aligned}
+    `,
+    {
+      displayMode: true,
+      throwOnError: false
+    }
+  );
+  const eqNewton = katex.renderToString(
+    `
+    \\begin{aligned}
+    \\mu_{n+1} &= \\mu_n + \\gamma \\small \\frac{\\partial^2}{\\partial \\mu_n^2}\\ell^{-1} \\frac{\\partial}{\\partial \\mu_n}\\ell \\\\
+    \\sigma^2_{n+1} &= \\sigma^2_n + \\small \\frac{\\partial^2}{\\partial (\\sigma_n^2)^2}\\ell^{-1}\\gamma \\frac{\\partial}{\\partial \\sigma^2_n}\\ell 
+    \\end{aligned}
+    `,
+    {
+      displayMode: true,
+      throwOnError: false
+    }
+  );
   return (
     <div>
       <Typography variant="body1">
@@ -156,27 +181,21 @@ const GradientAscent = props => {
         to see how a gradient ascent algorithm finds it's way to the maximum
         likelihood estimate.
       </Typography>
-      {props.algo != "none" && 
-            <Collapse in={expanded} timeout="auto" unmountOnExit>
-            <ExpansionPanel expanded={expanded} onChange={handleChange2}>
-              <ExpansionPanelSummary
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
-                <Typography className={classes.heading}>
-                  {props.algo}
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails>
-                <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-                  eget.
-                </Typography>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-          </Collapse>
-      }
+      {props.algo != "none" && (
+        <Collapse in={expanded} timeout="auto" unmountOnExit>
+          <Paper>
+            <Typography className={classes.heading}>{props.algo}</Typography>
+
+            <Typography variant="body2">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
+              eget.
+              <p dangerouslySetInnerHTML={{ __html: eqGrad }}></p>
+              <p dangerouslySetInnerHTML={{ __html: eqNewton }}></p>
+            </Typography>
+          </Paper>
+        </Collapse>
+      )}
 
       <Grid
         container
@@ -217,7 +236,6 @@ const GradientAscent = props => {
           Iterations: {count} {converged && "(converged)"}
         </Typography>
       )}
-
     </div>
   );
 };
