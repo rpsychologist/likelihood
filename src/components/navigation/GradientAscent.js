@@ -4,6 +4,9 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Collapse from "@material-ui/core/Collapse";
 import Typography from "@material-ui/core/Typography";
+import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
+import CardContent from "@material-ui/core/CardContent";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
@@ -31,6 +34,9 @@ const useStyles = makeStyles(theme => ({
   },
   selectEmpty: {
     marginTop: theme.spacing(2)
+  },
+  eqCard: {
+    backgroundColor: "#f1f7f9"
   }
 }));
 
@@ -130,19 +136,8 @@ const Controls = ({
   );
 };
 
-const GradientAscent = props => {
-  const dispatch = useContext(VizDispatch);
-  const { algo, count, converged } = props;
+const CardGradient = ({ toggle }) => {
   const classes = useStyles();
-  const handleChange = event => {
-    dispatch({ name: "algo", value: event.target.value });
-  };
-  const [expanded, setExpanded] = useState(false);
-
-  console.log(expanded);
-  const handleChange2 = () => {
-    setExpanded(val => !val);
-  };
   const eqGrad = katex.renderToString(
     `
     \\begin{aligned}
@@ -155,10 +150,35 @@ const GradientAscent = props => {
       throwOnError: false
     }
   );
+  return (
+    <Card className={classes.eqCard}>
+      <CardContent>
+        <Typography variant="h5" component="h2" gutterBottom>
+          Gradient Ascent
+        </Typography>
+        <Typography variant="body2" component="p">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
+          malesuada lacus ex, sit amet blandit leo lobortis eget.
+          <p dangerouslySetInnerHTML={{ __html: eqGrad }}></p>
+          {/*   <p dangerouslySetInnerHTML={{ __html: eqNewton }}></p> */}
+        </Typography>
+      </CardContent>
+      <CardActions>
+        <Button size="small" onClick={toggle}>
+          Close
+        </Button>
+      </CardActions>
+    </Card>
+  );
+};
+
+const CardNewton = ({ toggle }) => {
+  const classes = useStyles();
+
   const eqNewton = katex.renderToString(
     `
     \\begin{aligned}
-    \\mu_{n+1} &= \\mu_n + \\gamma \\small \\frac{\\partial^2}{\\partial \\mu_n^2}\\ell^{-1} \\frac{\\partial}{\\partial \\mu_n}\\ell \\\\
+    \\mu_{n+1} &= \\mu_n + \\small \\frac{\\partial^2}{\\partial \\mu_n^2}\\ell^{-1} \\frac{\\partial}{\\partial \\mu_n}\\ell \\\\
     \\sigma^2_{n+1} &= \\sigma^2_n + \\small \\frac{\\partial^2}{\\partial (\\sigma_n^2)^2}\\ell^{-1}\\gamma \\frac{\\partial}{\\partial \\sigma^2_n}\\ell 
     \\end{aligned}
     `,
@@ -167,6 +187,48 @@ const GradientAscent = props => {
       throwOnError: false
     }
   );
+  return (
+    <Card className={classes.eqCard}>
+      <CardContent>
+        <Typography variant="h5" component="h2" gutterBottom>
+          The Newton-Raphson Method
+        </Typography>
+        <Typography variant="body2" component="p">
+          The Newton-Raphson method (which is the same as Fisher scoring in this
+          example) is similar to gradient ascent except that the step length now
+          also depends on the <b>Hessian</b> (i.e., the matrix of second-order
+          partial derivates). More technically, we now do a second-order{" "}
+          <b>Taylor approximation</b> around the current value and update our
+          estimate to maxima of the approximation. This is best illustrated by
+          the red curve in variance plot, as curve for the mean is perfectly
+          approximated and we'll find the MLE in one step. For our simple model
+          we do the following iterating until convergence:
+          <span dangerouslySetInnerHTML={{ __html: eqNewton }}/>
+          Note: I only illustrate the Taylor approximation in one dimension, but for multivariable problems such as ours the approximation is of course multidimensional. However, I do not show it on the contour plot as the intution would be the same. 
+        </Typography>
+      </CardContent>
+      <CardActions>
+        <Button size="small" onClick={toggle}>
+          Close
+        </Button>
+      </CardActions>
+    </Card>
+  );
+};
+
+const GradientAscent = props => {
+  const dispatch = useContext(VizDispatch);
+  const { algo, count, converged } = props;
+  const classes = useStyles();
+  const handleChange = event => {
+    dispatch({ name: "algo", value: event.target.value });
+  };
+  const [expanded, setExpanded] = useState(false);
+
+  const handleChange2 = () => {
+    setExpanded(val => !val);
+  };
+
   return (
     <div>
       <Typography variant="body1">
@@ -181,22 +243,12 @@ const GradientAscent = props => {
         to see how a gradient ascent algorithm finds it's way to the maximum
         likelihood estimate.
       </Typography>
-      {props.algo != "none" && (
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Paper>
-            <Typography className={classes.heading}>{props.algo}</Typography>
-
-            <Typography variant="body2">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-              eget.
-              <p dangerouslySetInnerHTML={{ __html: eqGrad }}></p>
-              <p dangerouslySetInnerHTML={{ __html: eqNewton }}></p>
-            </Typography>
-          </Paper>
-        </Collapse>
-      )}
-
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        {props.algo == "gradientAscent" && (
+          <CardGradient toggle={handleChange2} />
+        )}
+        {props.algo == "newtonRaphson" && <CardNewton toggle={handleChange2} />}
+      </Collapse>
       <Grid
         container
         direction="row"
